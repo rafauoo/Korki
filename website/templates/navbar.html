@@ -8,6 +8,15 @@
             <li class="nav-item">
                 <a class="nav-link" href="#">Zadania</a>
             </li>
+            {% if user.is_authenticated %}
+            <li class="nav-item">
+              <a class="nav-link" href="{% url 'logout' %}">Wyloguj</a>
+            </li>
+            {% else %}
+            <li class="nav-item">
+              <a class="nav-link" href="{% url 'home' %}">Zaloguj</a>
+            </li>
+            {% endif %}
         </ul>
       </div>
     </div>
