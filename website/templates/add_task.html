@@ -1,7 +1,9 @@
 {% extends 'base.html' %}
 {% block content %}
+<h1>Dodawanie zadania</h1>
   <form method="POST" enctype="multipart/form-data" action="{% url 'add_task' %}">
     {% csrf_token %}
+    
     <!-- Wybór przedmiotu -->
     <div class="mb-3">
         <label for="task_subj" class="form-label">Wybierz przedmiot</label>
@@ -46,8 +48,31 @@
       <label for="files" class="form-label">Dodaj pliki</label>
       <input type="file" name="files" id="files" class="form-control" multiple>
     </div>
+
+
+    <!-- Poziom -->
+    <div class="mb-3">
+        <label for="level" class="form-label">Poziom</label>
+        <select id="level" name="level" class="form-select form-select-sm" aria-label="Topic picker">
+            <option value="" selected>Wybierz poziom</option>
+            {% for lev in levels %}
+            <option value="{{ lev.id }}">{{ lev.name }}</option>
+            {% endfor %}
+        </select>
+    </div>
+
+    <!-- Trudność -->
+    <div class="mb-3">
+        <label for="diff" class="form-label">Trudność</label>
+        <output>0</output>
+        <input type="range" class="form-range" value="0" min="0" max="100" step="1" name="diff" oninput="this.previousElementSibling.value = this.value" id="diff">
+    </div>
+
+    <!-- Przycisk przesyłania -->
+    <button type="submit" class="btn btn-primary">Prześlij</button>
+
     {% if form.errors %}
-    <div class="alert alert-danger" role="alert">
+    <div class="alert alert-danger mt-3" role="alert">
         <strong>Formularz zawiera błędy:</strong>
         <ul>
             {% for field, error in form.errors.items %}
@@ -57,8 +82,6 @@
     </div>
     {% endif %}
 
-    <!-- Przycisk przesyłania -->
-    <button type="submit" class="btn btn-primary">Prześlij</button>
   </form>
 
   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>

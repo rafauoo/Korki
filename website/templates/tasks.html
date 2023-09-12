@@ -1,12 +1,64 @@
 {% extends 'base.html' %}
 {% block content %}
-<table class="table">
+<form method="POST" class="row g-3" enctype="multipart/form-data" action="{% url 'tasks' %}">
+    {% csrf_token %}
+    {% if form.errors %}
+    <div class="alert alert-danger mt-3" role="alert">
+        <strong>Formularz zawiera błędy:</strong>
+        <ul>
+            {% for field, error in form.errors.items %}
+            <li>{{ field }}: {{ error }}</li>
+            {% endfor %}
+        </ul>
+    </div>
+    {% endif %}
+
+    <!-- Wybór przedmiotu -->
+    <div class="col-md-4">
+        <label for="task_subj" class="form-label">Przedmiot</label>
+        <select id="task_subj" name="task_subj" class="form-select form-select-sm mb-3" aria-label="Type picker">
+            <option value="" selected></option>
+            {% for subj in subjects %}
+            <option value="{{ subj.id }}">{{ subj.name }}</option>
+            {% endfor %}
+        </select>
+        </div>
+    
+    <!-- Wybór typu zadania -->
+    <div class="col-md-4">
+      <label for="task_type" class="form-label">Dział</label>
+      <select id="task_type" name="task_type" class="form-select form-select-sm mb-3" aria-label="Type picker" disabled>
+        <option value="" selected></option>
+        {% for type in types %}
+          <option value="{{ type.id }}">{{ type.name }}</option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <!-- Wybór tematu -->
+    <div class="col-md-4">
+      <label for="topic" class="form-label">Temat</label>
+      <select id="topic" name="topic" class="form-select form-select-sm mb-3" aria-label="Topic picker" disabled>
+        <option value="" selected></option>
+        {% for topic in topics %}
+          <option value="{{ topic.id }}">{{ topic.name }}</option>
+        {% endfor %}
+      </select>
+    </div>
+      <div class="col-12 ms-5">
+        <button type="submit" class="btn btn-secondary">Filtruj</button>
+      </div>
+</form>
+
+<table class="table mt-5">
     <thead>
       <tr>
         <th scope="col">#</th>
         <th scope="col">Przedmiot</th>
+        <th scope="col">Poziom</th>
         <th scope="col">Dział</th>
         <th scope="col">Temat</th>
+        <th scope="col">Trudność</th>
         <th scope="col">Autor</th>
         <th scope="col">Link</th>
       </tr>
@@ -16,8 +68,11 @@
         {% for task in all_tasks %}
         <tr>
             <th scope="row">{{task.id}}</th>
+            <td>{{ task.topic.type.subject.name }}</td>
+            <td>{{ task.level.name }}</td>
             <td>{{ task.topic.type.name }}</td>
             <td>{{ task.topic.name }}</td>
+            <td>{{ task.difficulty }}</td>
             <td>{{ task.author.username }}</td>
             <td>
                 <a class="btn btn-primary" href="{% url 'task_page_by_id' task.pk %}" role="button">Link</a>
@@ -27,4 +82,69 @@
     {% endif %}
     </tbody>
   </table>
+
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script>
+    $(document).ready(function () {
+      $('#task_subj').change(function () {
+        const selectedSubj = $(this).val();
+        const typeSelect = $('#task_type');
+        typeSelect.empty();
+        typeSelect.append('<option value="" selected></option>')
+
+        const topicSelect = $('#topic');
+        topicSelect.empty();
+        topicSelect.prop('disabled', true)
+        topicSelect.append('<option value="" selected></option>')
+
+        if (selectedSubj) {
+          $.ajax({
+            url: '/load_types/',  // Ustaw odpowiedni URL
+            data: { 'subject_id': selectedSubj },
+            dataType: 'json',
+            success: function (data) {
+              if (jQuery.isEmptyObject(data.types))
+                typeSelect.prop('disabled', true);
+              else {
+                typeSelect.prop('disabled', false);  // Odblokuj pole tematu
+
+                $.each(data.types, function (key, value) {
+                    typeSelect.append('<option value="' + key + '">' + value + '</option>');
+                });
+              }
+            },
+          });
+        } else {
+          typeSelect.prop('disabled', true);  // Zablokuj pole tematu
+        }
+      });
+
+      $('#task_type').change(function () {
+        const selectedType = $(this).val();
+        const topicSelect = $('#topic');
+        topicSelect.empty();
+        topicSelect.append('<option value="" selected></option>')
+
+        if (selectedType) {
+          $.ajax({
+            url: '/load_topics/',  // Ustaw odpowiedni URL
+            data: { 'type_id': selectedType },
+            dataType: 'json',
+            success: function (data) {
+              if (jQuery.isEmptyObject(data.topics))
+                topicSelect.prop('disabled', true);
+              else {
+                topicSelect.prop('disabled', false);
+                $.each(data.topics, function (key, value) {
+                    topicSelect.append('<option value="' + key + '">' + value + '</option>');
+                });
+              }
+            }
+          });
+        } else {
+          topicSelect.prop('disabled', true);  // Zablokuj pole tematu
+        }
+      });
+    });
+  </script>
 {% endblock %}

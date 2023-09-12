@@ -30,7 +30,7 @@ class TaskType(models.Model):
         subj = "Brak"
         if self.subject is not None:
             subj = self.subject.name
-        return (f"[{subj}] {self.name}")
+        return (f"{self.name}")
 
 class TaskTopic(models.Model):
     name = models.CharField(max_length=255)
@@ -43,7 +43,7 @@ class TaskTopic(models.Model):
             typ = self.type.name
             if self.type.subject is not None:
                 subj = self.type.subject.name
-        return (f"[{subj}] ({typ}) {self.name}")
+        return (f"{self.name}")
 
 class Task(models.Model):
     topic = models.ForeignKey(TaskTopic, on_delete=models.SET_NULL, null=True)

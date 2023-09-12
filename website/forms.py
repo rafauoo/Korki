@@ -1,5 +1,5 @@
 from django import forms
-from .models import TaskType, TaskTopic, TaskSubject
+from .models import TaskType, TaskTopic, TaskSubject, TaskLevel
 
 class MultipleFileInput(forms.ClearableFileInput):
     allow_multiple_selected = True
@@ -23,6 +23,17 @@ class TaskForm(forms.Form):
     topic = forms.ModelChoiceField(queryset=TaskTopic.objects.all(), empty_label=None)
     description = forms.CharField(max_length=255, widget=forms.Textarea)
     files = MultipleFileField(required=False)  # Użyj naszej nowej MultipleFileField
+    level = forms.ModelChoiceField(queryset=TaskLevel.objects.all(), empty_label=None)
+    diff = forms.IntegerField(max_value=100, min_value=0, step_size=1)
 
     def __init__(self, *args, **kwargs):
         super(TaskForm, self).__init__(*args, **kwargs)
+
+
+class AdminFilterTaskForm(forms.Form):
+    task_subj = forms.ModelChoiceField(queryset=TaskSubject.objects.all(), empty_label=None, required=False)
+    level = forms.ModelChoiceField(queryset=TaskLevel.objects.all(), empty_label=None, required=False)
+    task_type = forms.ModelChoiceField(queryset=TaskType.objects.all(), empty_label=None, required=False)
+    topic = forms.ModelChoiceField(queryset=TaskTopic.objects.all(), empty_label=None, required=False)
+    min_diff = forms.IntegerField(max_value=100, min_value=0, step_size=1, required=False)
+    max_diff = forms.IntegerField(max_value=100, min_value=0, step_size=1, required=False)
