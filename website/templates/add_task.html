@@ -1,4 +1,128 @@
 {% extends 'base.html' %}
 {% block content %}
-    <h1>Admin page</h1>
+  <form method="POST" enctype="multipart/form-data" action="{% url 'add_task' %}">
+    {% csrf_token %}
+    <!-- Wybór przedmiotu -->
+    <div class="mb-3">
+        <label for="task_subj" class="form-label">Wybierz przedmiot</label>
+        <select id="task_subj" name="task_subj" class="form-select form-select-lg mb-3" aria-label="Type picker">
+            <option value="" selected>Wybierz przedmiot</option>
+            {% for subj in subjects %}
+            <option value="{{ subj.id }}">{{ subj.name }}</option>
+            {% endfor %}
+        </select>
+        </div>
+    
+    <!-- Wybór typu zadania -->
+    <div class="mb-3">
+      <label for="task_type" class="form-label">Wybierz dział</label>
+      <select id="task_type" name="task_type" class="form-select form-select-me mb-3" aria-label="Type picker" disabled>
+        <option value="" selected>Wybierz dział</option>
+        {% for type in types %}
+          <option value="{{ type.id }}">{{ type.name }}</option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <!-- Wybór tematu -->
+    <div class="mb-3">
+      <label for="topic" class="form-label">Wybierz temat</label>
+      <select id="topic" name="topic" class="form-select form-select-sm" aria-label="Topic picker" disabled>
+        <option value="" selected>Wybierz temat</option>
+        {% for topic in topics %}
+          <option value="{{ topic.id }}">{{ topic.name }}</option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <!-- Opis zadania -->
+    <div class="mb-3">
+      <label for="description" class="form-label">Opis Zadania</label>
+      <textarea name="description" id="description" class="form-control" rows="3"></textarea>
+    </div>
+
+    <!-- Wybór plików -->
+    <div class="mb-3">
+      <label for="files" class="form-label">Dodaj pliki</label>
+      <input type="file" name="files" id="files" class="form-control" multiple>
+    </div>
+    {% if form.errors %}
+    <div class="alert alert-danger" role="alert">
+        <strong>Formularz zawiera błędy:</strong>
+        <ul>
+            {% for field, error in form.errors.items %}
+            <li>{{ field }}: {{ error }}</li>
+            {% endfor %}
+        </ul>
+    </div>
+    {% endif %}
+
+    <!-- Przycisk przesyłania -->
+    <button type="submit" class="btn btn-primary">Prześlij</button>
+  </form>
+
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script>
+    $(document).ready(function () {
+      $('#task_subj').change(function () {
+        const selectedSubj = $(this).val();
+        const typeSelect = $('#task_type');
+        typeSelect.empty();
+       // typeSelect.append('<option value="" selected>Wybierz dział</option>')
+
+        const topicSelect = $('#topic');
+        topicSelect.empty();
+        topicSelect.prop('disabled', true)
+        //topicSelect.append('<option value="" selected>Wybierz temat</option>')
+
+        if (selectedSubj) {
+          $.ajax({
+            url: '/load_types/',  // Ustaw odpowiedni URL
+            data: { 'subject_id': selectedSubj },
+            dataType: 'json',
+            success: function (data) {
+              if (jQuery.isEmptyObject(data.types))
+                typeSelect.prop('disabled', true);
+              else {
+                typeSelect.prop('disabled', false);  // Odblokuj pole tematu
+
+                $.each(data.types, function (key, value) {
+                    typeSelect.append('<option value="' + key + '">' + value + '</option>');
+                });
+              }
+            },
+          });
+        } else {
+          typeSelect.prop('disabled', true);  // Zablokuj pole tematu
+        }
+      });
+
+      $('#task_type').change(function () {
+        const selectedType = $(this).val();
+        const topicSelect = $('#topic');
+        topicSelect.empty();
+        //topicSelect.append('<option value="" selected>Wybierz temat</option>')
+
+        if (selectedType) {
+          $.ajax({
+            url: '/load_topics/',  // Ustaw odpowiedni URL
+            data: { 'type_id': selectedType },
+            dataType: 'json',
+            success: function (data) {
+              if (jQuery.isEmptyObject(data.topics))
+                topicSelect.prop('disabled', true);
+              else {
+                topicSelect.prop('disabled', false);
+                $.each(data.topics, function (key, value) {
+                    topicSelect.append('<option value="' + key + '">' + value + '</option>');
+                });
+              }
+            }
+          });
+        } else {
+          topicSelect.prop('disabled', true);  // Zablokuj pole tematu
+        }
+      });
+    });
+  </script>
 {% endblock %}
