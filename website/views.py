@@ -38,29 +38,41 @@ def logout_user(request):
 def tasks(request):
     filtered_tasks = Task.objects.all()
     all_subjects = TaskSubject.objects.all()
+    all_levels = TaskLevel.objects.all()
     if request.method == 'POST':
         form = AdminFilterTaskForm(request.POST)
         if form.is_valid():
             if form.cleaned_data['task_subj']:
-                filtered_tasks = Task.objects.filter(
+                filtered_tasks = filtered_tasks.filter(
                     topic__type__subject__name=form.cleaned_data['task_subj']
                 )
             if form.cleaned_data['task_type']:
-                filtered_tasks = Task.objects.filter(
+                filtered_tasks = filtered_tasks.filter(
                     topic__type__name=form.cleaned_data['task_type']
                 )
             if form.cleaned_data['topic']:
-                filtered_tasks = Task.objects.filter(
+                filtered_tasks = filtered_tasks.filter(
                     topic__name=form.cleaned_data['topic']
-                )   
-            print(form.cleaned_data['task_subj'])
-            print(form.cleaned_data['task_type'])
-            print(form.cleaned_data['topic'])
-            return render(request, 'tasks.html', {'form': form, 'all_tasks': filtered_tasks, 'subjects': all_subjects})
+                )
+            if form.cleaned_data['level']:
+                filtered_tasks = filtered_tasks.filter(
+                    level__name=form.cleaned_data['level']
+                )
+            if form.cleaned_data['min_diff']:
+                filtered_tasks = filtered_tasks.filter(
+                    difficulty__gte=form.cleaned_data['min_diff']
+                )
+            if form.cleaned_data['max_diff']:
+                filtered_tasks = filtered_tasks.filter(
+                    difficulty__lte=form.cleaned_data['max_diff']
+                )
+            print(form.cleaned_data['level'])
+            return render(request, 'tasks.html', {'form': form, 'all_tasks': filtered_tasks, 'subjects': all_subjects, 
+                                                  'levels': all_levels})
     else:
         form = AdminFilterTaskForm()
         
-    return render(request, 'tasks.html', {'form': form, 'all_tasks': filtered_tasks, 'subjects': all_subjects})
+    return render(request, 'tasks.html', {'form': form, 'all_tasks': filtered_tasks, 'subjects': all_subjects, 'levels': all_levels})
 
 @user_passes_test(lambda u: u.is_superuser)
 def add_task(request):

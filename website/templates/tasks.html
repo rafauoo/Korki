@@ -45,9 +45,35 @@
         {% endfor %}
       </select>
     </div>
-      <div class="col-12 ms-5">
-        <button type="submit" class="btn btn-secondary">Filtruj</button>
-      </div>
+
+    <!-- Wybór poziomu-->
+    <div class="col-md-4">
+        <label for="level" class="form-label">Poziom</label>
+        <select id="level" name="level" class="form-select form-select-sm mb-3" aria-label="Type picker">
+            <option value="" selected></option>
+            {% for lev in levels %}
+            <option value="{{ lev.id }}">{{ lev.name }}</option>
+            {% endfor %}
+        </select>
+    </div>
+
+    <!-- Trudność -->
+    <div class="col-md-2">
+        <label for="min_diff" class="form-label">Min Trudność</label>
+        <input class="form-control" min="0" max="100" step="1" name="min_diff" id="min_diff">
+    </div>
+
+    <div class="col-md-2">
+        <label for="max_diff" class="form-label">Max Trudność</label>
+        <input class="form-control" min="0" max="100" step="1" name="max_diff" id="max_diff">
+    </div>
+    
+    
+    <div class="col-md-4">
+        <div class="ms-5 mt-4">
+            <button type="submit" class="btn btn-secondary">Filtruj</button>
+        </div>
+    </div>
 </form>
 
 <table class="table mt-5">
