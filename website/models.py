@@ -9,6 +9,11 @@ def task_file_path(instance, filename):
     # file will be uploaded to MEDIA_ROOT/assignments/#<assignment_id>/responses/<response_id>/<filename>
     return "tasks/{0}/{1}/{2}/#{3}/{4}".format(instance.task.topic.type.subject.name, instance.task.topic.type.name, instance.task.topic.name, instance.task.id, filename)
 
+class TaskLevel(models.Model):
+    name = models.CharField(max_length=255)
+    
+    def __str__(self) -> str:
+        return (f"{self.name}")
 
 
 class TaskSubject(models.Model):
@@ -45,7 +50,7 @@ class Task(models.Model):
     description = models.CharField(max_length=2048)
     author = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
     difficulty = models.IntegerField(null=True)
-    level = models.ForeignKey()
+    level = models.ForeignKey(TaskLevel, on_delete=models.SET_NULL, null=True)
 
     def __str__(self) -> str:
         typ = "Brak"
