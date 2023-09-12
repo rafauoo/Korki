@@ -36,6 +36,10 @@ def logout_user(request):
 
 @login_required
 def tasks(request):
+    choice = {}
+    poss_types = TaskType.objects.all()
+    poss_topics = TaskTopic.objects.all()
+    print('level' in choice)
     filtered_tasks = Task.objects.all()
     all_subjects = TaskSubject.objects.all()
     all_levels = TaskLevel.objects.all()
@@ -46,9 +50,15 @@ def tasks(request):
                 filtered_tasks = filtered_tasks.filter(
                     topic__type__subject__name=form.cleaned_data['task_subj']
                 )
+                poss_types = poss_types.filter(
+                    subject__name = form.cleaned_data['task_subj']
+                )
             if form.cleaned_data['task_type']:
                 filtered_tasks = filtered_tasks.filter(
                     topic__type__name=form.cleaned_data['task_type']
+                )
+                poss_topics = poss_topics.filter(
+                    type__name = form.cleaned_data['task_type']
                 )
             if form.cleaned_data['topic']:
                 filtered_tasks = filtered_tasks.filter(
@@ -67,8 +77,15 @@ def tasks(request):
                     difficulty__lte=form.cleaned_data['max_diff']
                 )
             print(form.cleaned_data['level'])
+            choice['task_subj'] = form.cleaned_data.get('task_subj')
+            choice['task_type'] = form.cleaned_data.get('task_type')
+            choice['topic'] = form.cleaned_data.get('topic')
+            choice['level'] = form.cleaned_data.get('level')
+            choice['min_diff'] = form.cleaned_data.get('min_diff')
+            choice['max_diff'] = form.cleaned_data.get('max_diff')
+            print(choice)
             return render(request, 'tasks.html', {'form': form, 'all_tasks': filtered_tasks, 'subjects': all_subjects, 
-                                                  'levels': all_levels})
+                                                  'levels': all_levels, 'choice': choice, 'types': poss_types, 'topics': poss_topics})
     else:
         form = AdminFilterTaskForm()
         

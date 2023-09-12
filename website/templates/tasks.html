@@ -19,7 +19,11 @@
         <select id="task_subj" name="task_subj" class="form-select form-select-sm mb-3" aria-label="Type picker">
             <option value="" selected></option>
             {% for subj in subjects %}
-            <option value="{{ subj.id }}">{{ subj.name }}</option>
+                {% if choice.task_subj.name == subj.name %}
+                    <option value="{{ subj.id }}" selected>{{ subj.name }}</option>
+                {% else %}
+                    <option value="{{ subj.id }}">{{ subj.name }}</option>
+                {% endif %}
             {% endfor %}
         </select>
         </div>
@@ -27,10 +31,15 @@
     <!-- Wybór typu zadania -->
     <div class="col-md-4">
       <label for="task_type" class="form-label">Dział</label>
-      <select id="task_type" name="task_type" class="form-select form-select-sm mb-3" aria-label="Type picker" disabled>
+      <select id="task_type" name="task_type" class="form-select form-select-sm mb-3" aria-label="Type picker" 
+            {% if choice.task_subj %}enabled{% else %}disabled{% endif %}>
         <option value="" selected></option>
         {% for type in types %}
-          <option value="{{ type.id }}">{{ type.name }}</option>
+            {% if choice.task_type.name == type.name %}
+                <option value="{{ type.id }}" selected>{{ type.name }}</option>
+            {% else %}
+                <option value="{{ type.id }}">{{ type.name }}</option>
+            {% endif %}
         {% endfor %}
       </select>
     </div>
@@ -38,10 +47,15 @@
     <!-- Wybór tematu -->
     <div class="col-md-4">
       <label for="topic" class="form-label">Temat</label>
-      <select id="topic" name="topic" class="form-select form-select-sm mb-3" aria-label="Topic picker" disabled>
+      <select id="topic" name="topic" class="form-select form-select-sm mb-3" aria-label="Topic picker" 
+            {% if choice.task_type %}enabled{% else %}disabled{% endif %}>
         <option value="" selected></option>
         {% for topic in topics %}
-          <option value="{{ topic.id }}">{{ topic.name }}</option>
+            {% if choice.topic.name == topic.name %}
+                <option value="{{ topic.id }}" selected>{{ topic.name }}</option>
+            {% else %}
+                <option value="{{ topic.id }}">{{ topic.name }}</option>
+            {% endif %}
         {% endfor %}
       </select>
     </div>
@@ -52,7 +66,11 @@
         <select id="level" name="level" class="form-select form-select-sm mb-3" aria-label="Type picker">
             <option value="" selected></option>
             {% for lev in levels %}
-            <option value="{{ lev.id }}">{{ lev.name }}</option>
+                {% if choice.level.name == lev.name %}
+                    <option value="{{ lev.id }}" selected>{{ lev.name }}</option>
+                {% else %}
+                    <option value="{{ lev.id }}">{{ lev.name }}</option>
+                {% endif %}
             {% endfor %}
         </select>
     </div>
@@ -60,18 +78,29 @@
     <!-- Trudność -->
     <div class="col-md-2">
         <label for="min_diff" class="form-label">Min Trudność</label>
-        <input class="form-control" min="0" max="100" step="1" name="min_diff" id="min_diff">
+        <input class="form-control"
+            {% if choice.min_diff %}
+                value={{ choice.min_diff }}
+            {% endif %}
+        min="0" max="100" step="1" name="min_diff" id="min_diff">
     </div>
 
     <div class="col-md-2">
         <label for="max_diff" class="form-label">Max Trudność</label>
-        <input class="form-control" min="0" max="100" step="1" name="max_diff" id="max_diff">
+        <input class="form-control" 
+            {% if choice.max_diff %}
+            value={{ choice.max_diff }}
+            {% endif %}
+        min="0" max="100" step="1" name="max_diff" id="max_diff">
     </div>
     
     
-    <div class="col-md-4">
-        <div class="ms-5 mt-4">
-            <button type="submit" class="btn btn-secondary">Filtruj</button>
+    <div class="ms-1 col-md-4 row g-2">
+        <div class="col-md-3 mt-5">
+            <button type="submit" class="btn btn-success">Filtruj</button>
+        </div>
+        <div class="col-md-2 mt-5">
+            <a href="{% url 'tasks' %}" class="btn btn-danger">Resetuj</a>
         </div>
     </div>
 </form>
