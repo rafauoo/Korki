@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+{% block content %}
+<table class="table">
+    <thead>
+      <tr>
+        <th scope="col">#</th>
+        <th scope="col">Dział</th>
+        <th scope="col">Temat</th>
+        <th scope="col">Autor</th>
+        <th scope="col">Link</th>
+      </tr>
+    </thead>
+    <tbody>
+    {% if all_tasks %}
+        {% for task in all_tasks %}
+        <tr>
+            <th scope="row">{{task.id}}</th>
+            <td>{{ task.type.name }}</td>
+            <td>{{ task.topic.name }}</td>
+            <td>{{ task.author.username }}</td>
+            <td>
+                <a class="btn btn-primary" href="{% url 'task_page_by_id' task.pk %}" role="button">Link</a>
+            </td>
+        </tr>
+        {% endfor %}
+    {% endif %}
+    </tbody>
+  </table>
+{% endblock %}

@@ -1,0 +1,12 @@
+{% extends 'base.html' %}
+{% block content %}
+    <h1>Task #{{task.id}}</h1>
+    <h3>Description</h3>
+    <div>{{task.description}}</div>
+    <h3>Author</h3>
+    <div>{{task.author.username}}</div>
+    <h3>Dział</h3>
+    <div>{{task.type.name}}</div>
+    <h3>Temat</h3>
+    <div>{{task.topic.name}}</div>
+{% endblock %}

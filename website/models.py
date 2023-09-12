@@ -7,7 +7,7 @@ def response_file_path(instance, filename):
 
 def task_file_path(instance, filename):
     # file will be uploaded to MEDIA_ROOT/assignments/#<assignment_id>/responses/<response_id>/<filename>
-    return "tasks/{0}/#{1}/{2}".format(instance.task.type, instance.task.id, filename)
+    return "tasks/{0}/{1}/#{2}/{3}".format(instance.task.type.name, instance.task.topic.name, instance.task.id, filename)
 
 class TaskType(models.Model):
     name = models.CharField(max_length=255)
@@ -15,14 +15,27 @@ class TaskType(models.Model):
     def __str__(self) -> str:
         return (f"{self.name}")
 
+class TaskTopic(models.Model):
+    name = models.CharField(max_length=255)
+
+    def __str__(self) -> str:
+        return (f"{self.name}")
+
 class Task(models.Model):
     type = models.ForeignKey(TaskType, on_delete=models.SET_NULL, null=True)
+    topic = models.ForeignKey(TaskTopic, on_delete=models.SET_NULL, null=True)
     description = models.CharField(max_length=255)
     author = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
     difficulty = models.IntegerField(null=True)
-    
+
     def __str__(self) -> str:
-        return (f"#{self.id} ({self.type.name})")
+        typ = "Brak"
+        temat = "Brak"
+        if self.type is not None:
+            typ = self.type.name
+        if self.topic is not None:
+            temat = self.topic.name
+        return (f"#{self.id} ({typ}, {temat})")
 
 class FileType(models.Model):
     name = models.CharField(max_length=255)

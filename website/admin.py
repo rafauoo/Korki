@@ -1,7 +1,13 @@
 from django.contrib import admin
-from .models import Task, TaskFile, FileType, TaskType
+from .models import Task, TaskType, TaskFile, FileType
+from .models import Assignment, AssignmentStatus, Response, ResponseFile, TaskTopic
 # Register your models here.
 admin.site.register(Task)
 admin.site.register(TaskFile)
 admin.site.register(FileType)
 admin.site.register(TaskType)
+admin.site.register(Assignment)
+admin.site.register(AssignmentStatus)
+admin.site.register(Response)
+admin.site.register(ResponseFile)
+admin.site.register(TaskTopic)

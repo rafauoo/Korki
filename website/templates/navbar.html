@@ -6,16 +6,16 @@
                 <a class="nav-link" href="#">Lekcje</a>
             </li>
             <li class="nav-item">
-                <a class="nav-link" href="#">Zadania</a>
+                <a class="nav-link" href="{% url 'tasks' %}">Zadania</a>
             </li>
             {% if user.is_authenticated %}
-            <li class="nav-item">
-              <a class="nav-link" href="{% url 'logout' %}">Wyloguj</a>
-            </li>
+              <li class="nav-item">
+                <a class="nav-link" href="{% url 'logout' %}">Wyloguj</a>
+              </li>
             {% else %}
-            <li class="nav-item">
-              <a class="nav-link" href="{% url 'home' %}">Zaloguj</a>
-            </li>
+              <li class="nav-item">
+                <a class="nav-link" href="{% url 'login' %}">Zaloguj</a>
+              </li>
             {% endif %}
         </ul>
       </div>
