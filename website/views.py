@@ -4,6 +4,7 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.decorators import user_passes_test
 from .models import Task, TaskType,  TaskFile, TaskSubject, TaskLevel
+from django.contrib.auth.models import User
 from .forms import TaskForm, AdminFilterTaskForm
 from django.http import JsonResponse, HttpResponse
 from .models import TaskTopic
@@ -37,6 +38,7 @@ def logout_user(request):
 @login_required
 def tasks(request):
     choice = {}
+    cart = request.session.get('cart', [])
     poss_types = TaskType.objects.all()
     poss_topics = TaskTopic.objects.all()
     filtered_tasks = Task.objects.all()
@@ -75,20 +77,19 @@ def tasks(request):
                 filtered_tasks = filtered_tasks.filter(
                     difficulty__lte=form.cleaned_data['max_diff']
                 )
-            print(form.cleaned_data['level'])
             choice['task_subj'] = form.cleaned_data.get('task_subj')
             choice['task_type'] = form.cleaned_data.get('task_type')
             choice['topic'] = form.cleaned_data.get('topic')
             choice['level'] = form.cleaned_data.get('level')
             choice['min_diff'] = form.cleaned_data.get('min_diff')
             choice['max_diff'] = form.cleaned_data.get('max_diff')
-            print(choice)
             return render(request, 'tasks.html', {'form': form, 'all_tasks': filtered_tasks, 'subjects': all_subjects, 
-                                                  'levels': all_levels, 'choice': choice, 'types': poss_types, 'topics': poss_topics})
+                                                  'levels': all_levels, 'choice': choice, 'types': poss_types, 'topics': poss_topics, 'cart': cart})
     else:
+        print(cart)
         form = AdminFilterTaskForm()
         
-    return render(request, 'tasks.html', {'form': form, 'all_tasks': filtered_tasks, 'subjects': all_subjects, 'levels': all_levels})
+    return render(request, 'tasks.html', {'form': form, 'all_tasks': filtered_tasks, 'subjects': all_subjects, 'levels': all_levels, 'cart': cart})
 
 @user_passes_test(lambda u: u.is_superuser)
 def add_task(request):
@@ -178,3 +179,35 @@ def add_task_to_cart(request):
     # Zwróć odpowiedź JSON, która może zawierać informacje zwrotne o sukcesie lub błędzie
     response_data = {'message': f'Zadanie #{task_id} zostało dodane do koszyka.', 'success': True}
     return JsonResponse(response_data)
+
+@login_required
+def remove_task_from_cart(request):
+    # Pobierz identyfikator zadania z argumentów URL
+    task_id = request.POST.get('task_id')
+    # Pobierz zadanie o danym identyfikatorze lub zwróć błąd 404, jeśli nie istnieje
+    task = get_object_or_404(Task, id=task_id)
+
+    # Pobierz lub utwórz koszyk w sesji
+    cart = request.session.get('cart', [])
+    print(cart)
+    if task_id in cart:
+        cart.remove(task_id)
+        print(cart)
+        request.session['cart'] = cart
+        response_data = {'message': f'Zadanie #{task_id} zostało usunięte z koszyka', 'success': True}
+        return JsonResponse(response_data)
+    # Zwróć odpowiedź JSON, która może zawierać informacje zwrotne o sukcesie lub błędzie
+    response_data = {'message': f'Zadanie #{task_id} nie zostało usunięte z koszyka.', 'success': False}
+    return JsonResponse(response_data)
+
+def cart(request):
+    cart = request.session.get('cart', [])
+    tasks = Task.objects.filter(id__in=cart)
+    return render(request, 'cart.html', {'tasks': tasks})
+
+def search_user(request):
+    username = request.POST.get('text')
+    users = User.objects.filter(username__icontains=username)
+    user_list = [{'id': user.id, 'username': user.username} for user in users]
+    print(user_list)
+    return JsonResponse(user_list, safe=False)

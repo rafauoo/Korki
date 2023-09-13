@@ -1,0 +1,144 @@
+{% extends 'base.html' %}
+{% block content %}
+{% if tasks %}
+    <h1>Koszyk zadań</h1>
+    <table class="table mt-5">
+        <thead>
+          <tr>
+            <th scope="col">#</th>
+            <th scope="col">Przedmiot</th>
+            <th scope="col">Poziom</th>
+            <th scope="col">Dział</th>
+            <th scope="col">Temat</th>
+            <th scope="col">Trudność</th>
+            <th scope="col">Autor</th>
+            <th scope="col"></th>
+          </tr>
+        </thead>
+        <tbody>
+        {% if tasks %}
+            {% for task in tasks %}
+            <tr>
+                <th scope="row">{{task.id}}</th>
+                <td>{{ task.topic.type.subject.name }}</td>
+                <td>{{ task.level.name }}</td>
+                <td>{{ task.topic.type.name }}</td>
+                <td>{{ task.topic.name }}</td>
+                <td>{{ task.difficulty }}</td>
+                <td>{{ task.author.username }}</td>
+                <td>
+                  <a class="btn btn-danger remove-from-cart" data-task-id="{{ task.id }}" href="{% url 'cart' %}">Usuń</a>
+                </td>
+            </tr>
+            {% endfor %}
+        {% endif %}
+        </tbody>
+      </table>
+    <br/>
+    <form method="POST" enctype="multipart/form-data" action="{% url 'cart' %}">
+        {% csrf_token %}
+        <div class="mb-3">
+            <label for="search-user">Search for users:</label>
+            <div class="btn-group">
+                <input type="text" autocomplete="off" class="dropdown-toggle" data-bs-toggle="dropdown" data-bs-display="static" aria-expanded="false" id="search-user" name="search_term"/>
+                <ul id="search-list" class="dropdown-menu dropdown-menu-end dropdown-menu-lg-start">
+                    {% comment %} users {% endcomment %}
+                </ul>
+            </div>
+        </div>
+    </form>
+{% else %}
+    <h1> Koszyk jest pusty </h1>
+{% endif %}
+
+
+      <div class="toast-container position-fixed bottom-0 end-0 p-3">
+        <div id="liveToast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+          <div class="toast-header" id="toast-header">
+            <strong id="toast-title" class="me-auto" style="color: #fff;"></strong>
+            <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+          </div>
+          <div class="toast-body" id="toast-body">
+          </div>
+        </div>
+      </div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+<script>
+    $(document).ready(function () {
+
+        $('.remove-from-cart').click(function (event) {
+            event.preventDefault();
+            const taskId = $(this).data('task-id');
+        
+            // Wyślij żądanie POST do endpointu /add_task_to_cart z identyfikatorem zadania
+            $.ajax({
+              url: '/remove_task_from_cart/',
+              type: 'POST',
+              data: { 
+                'task_id': taskId,
+                csrfmiddlewaretoken: '{{ csrf_token }}' 
+              },
+              dataType: 'json',
+              success: function (data) {
+                console.log("asas")
+                const toastHeader = document.getElementById('toast-header')
+                const toastLive = document.getElementById('liveToast')
+                const toastBody = document.getElementById('toast-body')
+                const toastTitle = document.getElementById('toast-title')
+                const toastBootstrap = bootstrap.Toast.getOrCreateInstance(toastLive)
+                toastBody.innerHTML = data.message
+                if (data.success) {
+                  toastTitle.innerHTML = "Sukces"
+                  toastHeader.style.backgroundColor = '#03ad20';
+                  toastBootstrap.show();
+                  location.reload();
+                } else {
+                  toastTitle.innerHTML = "Błąd"
+                  toastHeader.style.backgroundColor = '#b30505';
+                  toastBootstrap.show();
+                }
+              },
+              error: function () {
+                alert('Wystąpił błąd podczas komunikacji z serwerem.');
+              }
+            });
+        });
+
+        $('#search-user').on("input", function (event) {
+            event.preventDefault();
+            const text = this.value;
+            const search_list = $('#search-list');
+            search_list.empty();
+            console.log(this.value);
+            $.ajax({
+              url: '/search_user/',
+              type: 'POST',
+              data: { 
+                'text': text,
+                csrfmiddlewaretoken: '{{ csrf_token }}' 
+              },
+              dataType: 'json',
+              success: function (data) {
+                for (index in data) {
+                    const newItem = document.createElement("li");
+                    console.log(data[index])
+                    newItem.innerHTML = `<button class="dropdown-item" type="button">${data[index].username}</button>`;
+                    search_list.append(newItem);
+                }
+              },
+              error: function () {
+                alert('Wystąpił błąd podczas komunikacji z serwerem.');
+              }
+            });
+        });
+
+        $('.dropdown-item').click(function (event) {
+            const input = $('#search-user');
+            input.value = 
+        });
+    });
+</script>
+{% endblock %}
+
