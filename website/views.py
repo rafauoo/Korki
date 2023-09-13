@@ -1,11 +1,11 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import authenticate, login, logout
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.decorators import user_passes_test
 from .models import Task, TaskType,  TaskFile, TaskSubject, TaskLevel
 from .forms import TaskForm, AdminFilterTaskForm
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse
 from .models import TaskTopic
 
 # Create your views here.
@@ -39,7 +39,6 @@ def tasks(request):
     choice = {}
     poss_types = TaskType.objects.all()
     poss_topics = TaskTopic.objects.all()
-    print('level' in choice)
     filtered_tasks = Task.objects.all()
     all_subjects = TaskSubject.objects.all()
     all_levels = TaskLevel.objects.all()
@@ -150,3 +149,32 @@ def load_types(request):
     types = TaskType.objects.filter(subject_id=subject_id).values_list('id', 'name')
     type_dict = dict(types)
     return JsonResponse({'types': type_dict})
+
+@login_required
+def assignments(request):
+    return render(request, 'assignments.html', {})
+
+@login_required
+def add_task_to_cart(request):
+    # Pobierz identyfikator zadania z argumentów URL
+    task_id = request.POST.get('task_id')
+
+    # Pobierz zadanie o danym identyfikatorze lub zwróć błąd 404, jeśli nie istnieje
+    task = get_object_or_404(Task, id=task_id)
+
+    # Pobierz lub utwórz koszyk w sesji
+    cart = request.session.get('cart', [])
+    if task_id in cart:
+        print(cart)
+        response_data = {'message': f'Zadanie #{task_id} już jest w koszyku.', 'success': False}
+        return JsonResponse(response_data)
+    # Dodaj identyfikator zadania do koszyka
+    cart.append(task_id)
+    
+    print(cart)
+    # Zapisz koszyk z powrotem do sesji
+    request.session['cart'] = cart
+
+    # Zwróć odpowiedź JSON, która może zawierać informacje zwrotne o sukcesie lub błędzie
+    response_data = {'message': f'Zadanie #{task_id} zostało dodane do koszyka.', 'success': True}
+    return JsonResponse(response_data)

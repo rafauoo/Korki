@@ -12,4 +12,6 @@ urlpatterns = [
     path('load_topics/', views.load_topics, name='load_topics'),
     path('load_types/', views.load_types, name='load_types'),
     path('tasks/<task_id>', views.task_page, name='task_page_by_id'),
+    path('assignments/', views.assignments, name='assignments'),
+    path('add_task_to_cart/', views.add_task_to_cart, name='add_task_to_cart'),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

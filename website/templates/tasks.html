@@ -116,6 +116,7 @@
         <th scope="col">Trudność</th>
         <th scope="col">Autor</th>
         <th scope="col">Link</th>
+        <th scope="col"></th>
       </tr>
     </thead>
     <tbody>
@@ -130,7 +131,10 @@
             <td>{{ task.difficulty }}</td>
             <td>{{ task.author.username }}</td>
             <td>
-                <a class="btn btn-primary" href="{% url 'task_page_by_id' task.pk %}" role="button">Link</a>
+              <a class="btn btn-primary" href="{% url 'task_page_by_id' task.pk %}" role="button">Link</a>
+            </td>
+            <td>
+              <a class="btn btn-secondary add-to-cart" data-task-id="{{ task.id }}" href="#">Dodaj</a>
             </td>
         </tr>
         {% endfor %}
@@ -138,9 +142,21 @@
     </tbody>
   </table>
 
+  <div class="toast-container position-fixed bottom-0 end-0 p-3">
+    <div id="liveToast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+      <div class="toast-header" id="toast-header">
+        <strong id="toast-title" class="me-auto" style="color: #fff;"></strong>
+        <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+      </div>
+      <div class="toast-body" id="toast-body">
+      </div>
+    </div>
+  </div>
+
   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
   <script>
     $(document).ready(function () {
+
       $('#task_subj').change(function () {
         const selectedSubj = $(this).val();
         const typeSelect = $('#task_type');
@@ -200,6 +216,42 @@
           topicSelect.prop('disabled', true);  // Zablokuj pole tematu
         }
       });
+
+      $('.add-to-cart').click(function (event) {
+        event.preventDefault();
+        const taskId = $(this).data('task-id');
+    
+        // Wyślij żądanie POST do endpointu /add_task_to_cart z identyfikatorem zadania
+        $.ajax({
+          url: '/add_task_to_cart/',
+          type: 'POST',
+          data: { 
+            'task_id': taskId,
+            csrfmiddlewaretoken: '{{ csrf_token }}' 
+          },
+          dataType: 'json',
+          success: function (data) {
+            const toastHeader = document.getElementById('toast-header')
+            const toastLive = document.getElementById('liveToast')
+            const toastBody = document.getElementById('toast-body')
+            const toastTitle = document.getElementById('toast-title')
+            const toastBootstrap = bootstrap.Toast.getOrCreateInstance(toastLive)
+            toastBody.innerHTML = data.message
+            if (data.success) {
+              toastTitle.innerHTML = "Sukces"
+              toastHeader.style.backgroundColor = '#03ad20';
+            } else {
+              toastTitle.innerHTML = "Błąd"
+              toastHeader.style.backgroundColor = '#b30505';
+            }
+            toastBootstrap.show()
+          },
+          error: function () {
+            alert('Wystąpił błąd podczas komunikacji z serwerem.');
+          }
+        });
+      });
+      
     });
   </script>
 {% endblock %}
