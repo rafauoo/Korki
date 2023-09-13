@@ -3,11 +3,12 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.decorators import user_passes_test
-from .models import Task, TaskType,  TaskFile, TaskSubject, TaskLevel
+from .models import Task, TaskType,  TaskFile, TaskSubject, TaskLevel, Assignment, AssignmentStatus
 from django.contrib.auth.models import User
-from .forms import TaskForm, AdminFilterTaskForm
+from .forms import TaskForm, AdminFilterTaskForm, AssignTask
 from django.http import JsonResponse, HttpResponse
 from .models import TaskTopic
+import datetime
 
 # Create your views here.
 def login_user(request):
@@ -203,7 +204,33 @@ def remove_task_from_cart(request):
 def cart(request):
     cart = request.session.get('cart', [])
     tasks = Task.objects.filter(id__in=cart)
-    return render(request, 'cart.html', {'tasks': tasks})
+    if request.method == 'POST':
+        form = AssignTask(request.POST)
+        if form.is_valid():
+            username = form.cleaned_data['user']
+            deadline = form.cleaned_data['deadline']
+            user = User.objects.get(username=username)
+            if not user:
+                messages.success(request, "Nie znaleziono takiego użytkownika!")
+                return render(request, 'cart.html', {'tasks': tasks, 'form': form})
+            
+            assignment = Assignment(
+                due_date=deadline,
+                assigned_user=user,
+                created_date=datetime.datetime.now(),
+                assigned_by=request.user,
+                status=AssignmentStatus.objects.get(name="Wysłany")
+            )
+            assignment.save()
+            cart = []
+            request.session['cart'] = cart
+            messages.success(request, f"Udało się przypisać zadanie dla {user}!")
+            return redirect('home')
+        else:
+            messages.success(request, "Wystąpił błąd przy przypisywaniu zadania!")
+    else:
+        form = AssignTask()
+    return render(request, 'cart.html', {'tasks': tasks, 'form': form})
 
 def search_user(request):
     username = request.POST.get('text')

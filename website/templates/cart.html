@@ -1,6 +1,7 @@
 {% extends 'base.html' %}
 {% block content %}
 {% if tasks %}
+
     <h1>Koszyk zadań</h1>
     <table class="table mt-5">
         <thead>
@@ -35,21 +36,41 @@
         </tbody>
       </table>
     <br/>
-    <form method="POST" enctype="multipart/form-data" action="{% url 'cart' %}">
+    <form method="POST" class="row g-3" enctype="multipart/form-data" action="{% url 'cart' %}">
         {% csrf_token %}
-        <div class="mb-3">
-            <label for="search-user">Search for users:</label>
+        <div class="cold-md-4">
+            <label for="search-user">Przypisz ucznia</label>
+            <br/>
             <div class="btn-group">
-                <input type="text" autocomplete="off" class="dropdown-toggle" data-bs-toggle="dropdown" data-bs-display="static" aria-expanded="false" id="search-user" name="search_term"/>
+                <input type="text" autocomplete="off" class="dropdown-toggle form-control" data-bs-toggle="dropdown" data-bs-display="static" aria-expanded="false" id="search-user" name="user"/>
                 <ul id="search-list" class="dropdown-menu dropdown-menu-end dropdown-menu-lg-start">
                     {% comment %} users {% endcomment %}
                 </ul>
             </div>
         </div>
+        <div class="col-md-2">
+            <label for="data_i_godzina">Wybierz datę i godzinę</label>
+            <input type="datetime-local" id="data_i_godzina" name="deadline" class="form-control">
+        </div>
+        <br/>
+        <div class="mt-5">
+            <button type="submit" class="btn btn-success">Przypisz</button>
+        </div>
     </form>
+    {% if form.errors %}
+    <div class="alert alert-danger mt-3" role="alert">
+        <strong>Formularz zawiera błędy:</strong>
+        <ul>
+            {% for field, error in form.errors.items %}
+            <li>{{ field }}: {{ error }}</li>
+            {% endfor %}
+        </ul>
+    </div>
+    {% endif %}
 {% else %}
     <h1> Koszyk jest pusty </h1>
 {% endif %}
+
 
 
       <div class="toast-container position-fixed bottom-0 end-0 p-3">
@@ -66,6 +87,7 @@
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
 <script>
+    
     $(document).ready(function () {
 
         $('.remove-from-cart').click(function (event) {
@@ -124,7 +146,7 @@
                 for (index in data) {
                     const newItem = document.createElement("li");
                     console.log(data[index])
-                    newItem.innerHTML = `<button class="dropdown-item" type="button">${data[index].username}</button>`;
+                    newItem.innerHTML = `<button class='dropdown-item' type='button'>${data[index].username}</button>`;
                     search_list.append(newItem);
                 }
               },
@@ -134,9 +156,11 @@
             });
         });
 
-        $('.dropdown-item').click(function (event) {
+        $('#search-list').on('click', '.dropdown-item', function (event) {
+            event.preventDefault();
+            console.log(this)
             const input = $('#search-user');
-            input.value = 
+            input.val(this.innerHTML);
         });
     });
 </script>

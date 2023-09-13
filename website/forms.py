@@ -1,5 +1,6 @@
 from django import forms
 from .models import TaskType, TaskTopic, TaskSubject, TaskLevel
+from django.contrib.auth.models import User
 
 class MultipleFileInput(forms.ClearableFileInput):
     allow_multiple_selected = True
@@ -37,3 +38,8 @@ class AdminFilterTaskForm(forms.Form):
     topic = forms.ModelChoiceField(queryset=TaskTopic.objects.all(), empty_label=None, required=False)
     min_diff = forms.IntegerField(max_value=100, min_value=0, step_size=1, required=False)
     max_diff = forms.IntegerField(max_value=100, min_value=0, step_size=1, required=False)
+
+class AssignTask(forms.Form):
+    user = forms.CharField(required=True)
+    deadline = forms.DateTimeField(required=True)
+
