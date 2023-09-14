@@ -1,0 +1,85 @@
+{% extends 'base.html' %}
+{% block content %}
+<style>
+    .btn-custom {
+      padding: 10px;
+      width: 150px;
+      font-size: 20px;
+    }
+    .btn-success {
+        width: 150px;
+    }
+</style>
+    <h1>Zadanie #{{assignment.id}}</h1>
+    <h4>Dla: {{ assignment.assigned_user }}
+    <h4>Przez: {{assignment.assigned_by}}
+    <h4>Do: {{assignment.due_date}}</h3>
+    <h4>Status: {{assignment.status.name}}</h4>
+    <table class="table mt-5">
+        <thead>
+          <tr>
+            <th scope="col">Przypisane zadania</th>
+          </tr>
+        </thead>
+        <tbody>
+        {% if tasks %}
+            {% for task in tasks %}
+            <tr>
+                <td>
+                  <a class="btn btn-primary btn-lg btn-custom" href="{% url 'task_page_by_id' task.pk %}" role="button">Zadanie #{{task.id}}</a>
+                </td>
+            </tr>
+            {% endfor %}
+        {% endif %}
+        </tbody>
+    </table>
+    {% if responses %}
+    <h4> Odpowiedzi </h4>
+        {% for response in responses %}
+        <div class="card">
+            <div class="card-header">
+                {{ response.0.author }}
+            </div>
+            <div class="card-body">
+                {{ response.0.description }}
+            </div>
+
+            {% if response.1 %}
+                <ul class="list-group list-group-flush">
+                    {% for file in response.1 %}
+                        <li class="list-group-item"><a href="/media/{{ file.file }}">{{file.name}}</a></li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+            <div class="card-footer text-muted">
+                {{ response.0.date_created }}
+            </div>
+        </div>
+        <br/>
+        {% endfor %}
+    {% endif %}
+    <h4> Dodaj odpowiedź </h4>
+    <form method="POST" enctype="multipart/form-data" action="{% url 'upload_response' assignment.id %}">
+        {% csrf_token %}
+        {% comment %} {% if form.errors %}
+        <div class="alert alert-danger mt-3" role="alert">
+            <strong>Formularz zawiera błędy:</strong>
+            <ul>
+                {% for field, error in form.errors.items %}
+                <li>{{ field }}: {{ error }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+        {% endif %} {% endcomment %}
+        <div class="mb-3">
+            <textarea class="form-control" id="exampleFormControlTextarea1" name="description" rows="5"></textarea>
+        </div>
+        <div class="mb-3">
+            <label for="formFileMultiple" class="form-label">Pliki</label>
+            <input class="form-control" type="file" id="formFileMultiple" name="files" multiple>
+        </div>
+        <div class="d-flex justify-content-end mb-5 ">
+            <button type="submit" class="btn btn-success">Wyślij</button>
+        </div>
+    </form>
+{% endblock %}

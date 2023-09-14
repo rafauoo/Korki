@@ -3,11 +3,13 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.decorators import user_passes_test
-from .models import Task, TaskType,  TaskFile, TaskSubject, TaskLevel, Assignment, AssignmentStatus
+from .models import Task, TaskType,  TaskFile, TaskSubject, TaskLevel, Assignment, AssignmentStatus, TaskAssignment, Response, ResponseFile
 from django.contrib.auth.models import User
-from .forms import TaskForm, AdminFilterTaskForm, AssignTask
+from .forms import TaskForm, AdminFilterTaskForm, AssignTask, AddResponse
 from django.http import JsonResponse, HttpResponse
 from .models import TaskTopic
+from django.utils import timezone
+from django.db.models import Q
 import datetime
 
 # Create your views here.
@@ -154,7 +156,16 @@ def load_types(request):
 
 @login_required
 def assignments(request):
-    return render(request, 'assignments.html', {})
+    my_assignments = Assignment.objects.filter(assigned_user=request.user)
+    date = datetime.datetime.now(tz=timezone.utc)
+    my_assignments_expired = my_assignments.filter(due_date__lt=date)
+    my_assignments_accepted = my_assignments.filter(status=AssignmentStatus.objects.get(name="Zaakceptowany"))
+    print(my_assignments_expired)
+    my_assignments_active = my_assignments.filter(due_date__gte=date)
+    my_assignments_active = my_assignments_active.filter(Q(status=AssignmentStatus.objects.get(name="Wysłany")) | Q(status=AssignmentStatus.objects.get(name="Odesłany")))
+    my_assignments_expired = my_assignments_expired | my_assignments_accepted
+    print(my_assignments_expired)
+    return render(request, 'assignments.html', {'my_assignments_expired': my_assignments_expired, 'my_assignments_active': my_assignments_active})
 
 @login_required
 def add_task_to_cart(request):
@@ -201,6 +212,7 @@ def remove_task_from_cart(request):
     response_data = {'message': f'Zadanie #{task_id} nie zostało usunięte z koszyka.', 'success': False}
     return JsonResponse(response_data)
 
+@login_required
 def cart(request):
     cart = request.session.get('cart', [])
     tasks = Task.objects.filter(id__in=cart)
@@ -222,6 +234,9 @@ def cart(request):
                 status=AssignmentStatus.objects.get(name="Wysłany")
             )
             assignment.save()
+            for task_id in cart:
+                task_ass = TaskAssignment(task=Task.objects.get(pk=task_id), assignment=Assignment.objects.get(pk=assignment.id))
+                task_ass.save()
             cart = []
             request.session['cart'] = cart
             messages.success(request, f"Udało się przypisać zadanie dla {user}!")
@@ -232,9 +247,47 @@ def cart(request):
         form = AssignTask()
     return render(request, 'cart.html', {'tasks': tasks, 'form': form})
 
+@login_required
 def search_user(request):
     username = request.POST.get('text')
     users = User.objects.filter(username__icontains=username)
     user_list = [{'id': user.id, 'username': user.username} for user in users]
     print(user_list)
     return JsonResponse(user_list, safe=False)
+
+@login_required
+def assignment_page(request, assignment_id):
+    assignment = Assignment.objects.get(pk=assignment_id)
+    ass_tasks = TaskAssignment.objects.filter(assignment=assignment)
+    responses = Response.objects.filter(assignment=assignment)
+    responses_with_files = []
+    for response in responses:
+        response_files = ResponseFile.objects.filter(response=response)
+        responses_with_files.append((response, response_files))
+    task_list = []
+    for task in ass_tasks:
+        task_list.append(task.task)
+    return render(request, 'assignment_page.html', {'assignment': assignment, 'tasks': task_list, 'responses': responses_with_files})
+
+def upload_response(request, assignment_id):
+    if request.method == 'POST':
+        form = AddResponse(request.POST, request.FILES)
+        if form.is_valid():
+            description = form.cleaned_data['description']
+            files = request.FILES.getlist('files')
+            if not description and not files:
+                messages.success(request, f"Nie można wysłać pustej odpowiedzi!")
+                return redirect('assignment_page_by_id', assignment_id)
+            response = Response(
+                date_created=datetime.datetime.now(),
+                assignment=Assignment.objects.get(pk=assignment_id),
+                description=description,
+                author=request.user
+            )
+            response.save()
+
+            for file in files:
+                print(file)
+                resp_file = ResponseFile(response=response, file=file, name=file)
+                resp_file.save()
+    return redirect('assignment_page_by_id', assignment_id)

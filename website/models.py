@@ -3,11 +3,11 @@ from django.contrib.auth.models import User
 # Create your models here.
 def response_file_path(instance, filename):
     # file will be uploaded to MEDIA_ROOT/assignments/#<assignment_id>/responses/<response_id>/<filename>
-    return "assignments/#{0}/responses/#{1}/{2}".format(instance.response.assignment.id, instance.response.id, filename)
+    return "assignments/{0}/responses/{1}/{2}".format(instance.response.assignment.id, instance.response.id, filename)
 
 def task_file_path(instance, filename):
     # file will be uploaded to MEDIA_ROOT/assignments/#<assignment_id>/responses/<response_id>/<filename>
-    return "tasks/{0}/{1}/{2}/#{3}/{4}".format(instance.task.topic.type.subject.name, instance.task.topic.type.name, instance.task.topic.name, instance.task.id, filename)
+    return "tasks/{0}/{1}/{2}/{3}/{4}".format(instance.task.topic.type.subject.name, instance.task.topic.type.name, instance.task.topic.name, instance.task.id, filename)
 
 class TaskLevel(models.Model):
     name = models.CharField(max_length=255)
@@ -74,6 +74,7 @@ class TaskFile(models.Model):
     task = models.ForeignKey(Task, on_delete=models.CASCADE)
     type = models.ForeignKey(FileType, on_delete=models.SET_NULL, null=True)
     file = models.FileField(upload_to=task_file_path)
+    name = models.CharField(max_length=255, null=True)
 
     def __str__(self) -> str:
         typ = "Brak"
@@ -108,6 +109,7 @@ class Response(models.Model):
     date_created = models.DateTimeField()
     assignment = models.ForeignKey(Assignment, on_delete=models.CASCADE)
     description = models.TextField()
+    author = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
 
     def __str__(self) -> str:
         return (f"#{self.id} [{self.date_created}]: Assigment #{self.assignment.id} (for {self.assignment.assigned_user.username} due {self.assignment.due_date})")
@@ -117,6 +119,7 @@ class ResponseFile(models.Model):
     response = models.ForeignKey(Response, on_delete=models.CASCADE)
     type = models.ForeignKey(FileType, on_delete=models.SET_NULL, null=True)
     file = models.FileField(upload_to=response_file_path)
+    name = models.CharField(max_length=255, null=True)
 
     def __str__(self) -> str:
         typ = "Brak"

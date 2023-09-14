@@ -22,7 +22,7 @@ class TaskForm(forms.Form):
     task_subj = forms.ModelChoiceField(queryset=TaskSubject.objects.all(), empty_label=None)
     task_type = forms.ModelChoiceField(queryset=TaskType.objects.all(), empty_label=None)
     topic = forms.ModelChoiceField(queryset=TaskTopic.objects.all(), empty_label=None)
-    description = forms.CharField(max_length=255, widget=forms.Textarea)
+    description = forms.CharField(max_length=2048, widget=forms.Textarea)
     files = MultipleFileField(required=False)  # Użyj naszej nowej MultipleFileField
     level = forms.ModelChoiceField(queryset=TaskLevel.objects.all(), empty_label=None)
     diff = forms.IntegerField(max_value=100, min_value=0, step_size=1)
@@ -43,3 +43,6 @@ class AssignTask(forms.Form):
     user = forms.CharField(required=True)
     deadline = forms.DateTimeField(required=True)
 
+class AddResponse(forms.Form):
+    description=forms.CharField(max_length=2048, widget=forms.Textarea, required=False)
+    files=MultipleFileField(required=False)
