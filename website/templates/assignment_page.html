@@ -1,5 +1,6 @@
 {% extends 'base.html' %}
 {% block content %}
+{% load custom_filters %}
 <style>
     .btn-custom {
       padding: 10px;
@@ -13,7 +14,7 @@
     <h1>Zadanie #{{assignment.id}}</h1>
     <h4>Dla: {{ assignment.assigned_user }}
     <h4>Przez: {{assignment.assigned_by}}
-    <h4>Do: {{assignment.due_date}}</h3>
+    <h4>Do: {{assignment.due_date|format_date}}</h3>
     <h4>Status: {{assignment.status.name}}</h4>
     <table class="table mt-5">
         <thead>
@@ -37,12 +38,19 @@
     <h4> Odpowiedzi </h4>
         {% for response in responses %}
         <div class="card">
-            <div class="card-header">
+            <div class="d-flex card-header">
+                <div class="me-auto ">
                 {{ response.0.author }}
+                </div>
+                <div class="ms-auto text-muted">
+                    #{{ response.0.id }}
+                </div>
             </div>
+            {% if response.0.description %}
             <div class="card-body">
                 {{ response.0.description }}
             </div>
+            {% endif %}
 
             {% if response.1 %}
                 <ul class="list-group list-group-flush">
@@ -52,7 +60,7 @@
                 </ul>
             {% endif %}
             <div class="card-footer text-muted">
-                {{ response.0.date_created }}
+                {{ response.0.date_created|format_date }}
             </div>
         </div>
         <br/>
