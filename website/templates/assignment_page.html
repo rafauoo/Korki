@@ -11,7 +11,7 @@
         width: 150px;
     }
 </style>
-    <h1>Zadanie #{{assignment.id}}</h1>
+    <h1>Przypisanie #{{assignment.id}}</h1>
     <h4>Dla: {{ assignment.assigned_user }}
     <h4>Przez: {{assignment.assigned_by}}
     <h4>Do: {{assignment.due_date|format_date}}</h3>
@@ -38,6 +38,7 @@
     <h4> Odpowiedzi </h4>
         {% for response in responses %}
         <div class="card">
+            {% now "Y-m-d H:m:s" as todays_date %}
             <div class="d-flex card-header">
                 <div class="me-auto ">
                 {{ response.0.author }}
@@ -59,35 +60,51 @@
                     {% endfor %}
                 </ul>
             {% endif %}
+            {% if todays_date > assignment.due_date|date:"Y-m-d H:m:s" %}
+            <div class="card-footer text-muted bg-warning">
+                {{ response.0.date_created|format_date }}
+                - Po czasie
+            </div>
+            {% else %}
             <div class="card-footer text-muted">
                 {{ response.0.date_created|format_date }}
+
             </div>
+            {% endif %}
         </div>
         <br/>
         {% endfor %}
     {% endif %}
-    <h4> Dodaj odpowiedź </h4>
-    <form method="POST" enctype="multipart/form-data" action="{% url 'upload_response' assignment.id %}">
-        {% csrf_token %}
-        {% comment %} {% if form.errors %}
-        <div class="alert alert-danger mt-3" role="alert">
-            <strong>Formularz zawiera błędy:</strong>
-            <ul>
-                {% for field, error in form.errors.items %}
-                <li>{{ field }}: {{ error }}</li>
-                {% endfor %}
-            </ul>
-        </div>
-        {% endif %} {% endcomment %}
-        <div class="mb-3">
-            <textarea class="form-control" id="exampleFormControlTextarea1" name="description" rows="5"></textarea>
-        </div>
-        <div class="mb-3">
-            <label for="formFileMultiple" class="form-label">Pliki</label>
-            <input class="form-control" type="file" id="formFileMultiple" name="files" multiple>
-        </div>
-        <div class="d-flex justify-content-end mb-5 ">
-            <button type="submit" class="btn btn-success">Wyślij</button>
-        </div>
-    </form>
+    {% if assignment.status.name != "Zaakceptowany"%}
+        <h4> Dodaj odpowiedź </h4>
+        <form method="POST" enctype="multipart/form-data" action="{% url 'upload_response' assignment.id %}">
+            {% csrf_token %}
+            {% comment %} {% if form.errors %}
+            <div class="alert alert-danger mt-3" role="alert">
+                <strong>Formularz zawiera błędy:</strong>
+                <ul>
+                    {% for field, error in form.errors.items %}
+                    <li>{{ field }}: {{ error }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+            {% endif %} {% endcomment %}
+            <div class="mb-3">
+                <textarea class="form-control" id="exampleFormControlTextarea1" name="description" rows="5"></textarea>
+            </div>
+            <div class="mb-3">
+                <label for="formFileMultiple" class="form-label">Pliki</label>
+                <input class="form-control" type="file" id="formFileMultiple" name="files" multiple>
+            </div>
+            {% if request.user == assignment.assigned_by %}
+            <div class="mb-3">
+                <input class="form-check-input" type="checkbox" id="formAcceptTask" name="acceptTask" multiple>
+                <label for="formAcceptTask" class="form-check-label">Zaakceptuj zadanie</label>
+            </div>
+            {% endif %}
+            <div class="d-flex justify-content-end mb-5 ">
+                <button type="submit" class="btn btn-success">Wyślij</button>
+            </div>
+        </form>
+    {% endif %}
 {% endblock %}

@@ -157,15 +157,9 @@ def load_types(request):
 @login_required
 def assignments(request):
     my_assignments = Assignment.objects.filter(assigned_user=request.user)
-    date = datetime.datetime.now(tz=timezone.utc)
-    my_assignments_expired = my_assignments.filter(due_date__lt=date)
     my_assignments_accepted = my_assignments.filter(status=AssignmentStatus.objects.get(name="Zaakceptowany"))
-    print(my_assignments_expired)
-    my_assignments_active = my_assignments.filter(due_date__gte=date)
-    my_assignments_active = my_assignments_active.filter(Q(status=AssignmentStatus.objects.get(name="Wysłany")) | Q(status=AssignmentStatus.objects.get(name="Odesłany")))
-    my_assignments_expired = my_assignments_expired | my_assignments_accepted
-    print(my_assignments_expired)
-    return render(request, 'assignments.html', {'my_assignments_expired': my_assignments_expired, 'my_assignments_active': my_assignments_active})
+    my_assignments_active = my_assignments.filter(Q(status=AssignmentStatus.objects.get(name="Wysłany")) | Q(status=AssignmentStatus.objects.get(name="Odesłany")))
+    return render(request, 'assignments.html', {'my_assignments_accepted': my_assignments_accepted, 'my_assignments_active': my_assignments_active})
 
 @login_required
 def add_task_to_cart(request):
@@ -261,20 +255,23 @@ def assignment_page(request, assignment_id):
     ass_tasks = TaskAssignment.objects.filter(assignment=assignment)
     responses = Response.objects.filter(assignment=assignment)
     responses_with_files = []
+    now = datetime.datetime.now()
     for response in responses:
         response_files = ResponseFile.objects.filter(response=response)
         responses_with_files.append((response, response_files))
     task_list = []
     for task in ass_tasks:
         task_list.append(task.task)
-    return render(request, 'assignment_page.html', {'assignment': assignment, 'tasks': task_list, 'responses': responses_with_files})
+    return render(request, 'assignment_page.html', {'assignment': assignment, 'tasks': task_list, 'responses': responses_with_files, 'now': now})
 
+@login_required
 def upload_response(request, assignment_id):
     if request.method == 'POST':
         form = AddResponse(request.POST, request.FILES)
         if form.is_valid():
             description = form.cleaned_data['description']
             files = request.FILES.getlist('files')
+            acceptTask = form.cleaned_data['acceptTask']
             if not description and not files:
                 messages.success(request, f"Nie można wysłać pustej odpowiedzi!")
                 return redirect('assignment_page_by_id', assignment_id)
@@ -290,4 +287,22 @@ def upload_response(request, assignment_id):
                 print(file)
                 resp_file = ResponseFile(response=response, file=file, name=file)
                 resp_file.save()
+            assignment = Assignment.objects.get(pk=assignment_id)
+            assignmentu = Assignment.objects.filter(pk=assignment_id)
+            if request.user == assignment.assigned_by:
+                if acceptTask:
+                    assignmentu.update(status=AssignmentStatus.objects.get(name="Zaakceptowany"))
+                elif assignment.status.name == "Odesłany":
+                    assignmentu.update(status=AssignmentStatus.objects.get(name="Wysłany"))
+            if request.user == assignment.assigned_user and assignment.status.name == "Wysłany":
+
+                assignmentu.update(status=AssignmentStatus.objects.get(name="Odesłany"))
     return redirect('assignment_page_by_id', assignment_id)
+
+@login_required
+def assigned_by_me(request):
+    assignments = Assignment.objects.filter(assigned_by=request.user)
+    assignments_sent = assignments.filter(status=AssignmentStatus.objects.get(name="Wysłany"))
+    assignments_sent_back = assignments.filter(status=AssignmentStatus.objects.get(name="Odesłany"))
+    assignments_accepted = assignments.filter(status=AssignmentStatus.objects.get(name="Zaakceptowany"))
+    return render(request, 'assigned_by_me.html', {'ass_sent': assignments_sent, 'ass_back': assignments_sent_back, 'ass_acc': assignments_accepted })

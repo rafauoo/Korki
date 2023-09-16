@@ -46,3 +46,4 @@ class AssignTask(forms.Form):
 class AddResponse(forms.Form):
     description=forms.CharField(max_length=2048, widget=forms.Textarea, required=False)
     files=MultipleFileField(required=False)
+    acceptTask=forms.BooleanField(required=False)
