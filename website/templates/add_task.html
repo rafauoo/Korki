@@ -1,8 +1,22 @@
 {% extends 'base.html' %}
 {% block content %}
 <h1>Dodawanie zadania</h1>
+  <script type="text/x-mathjax-config">
+    MathJax = {
+      tex: {
+        inlineMath: [['$', '$'], ['\\(', '\\)']]
+      },
+      svg: {
+        fontCache: 'global'
+      }
+    };
+    </script>
+    <script type="text/javascript" id="MathJax-script" async
+    src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js">
+  </script>
   <form method="POST" enctype="multipart/form-data" action="{% url 'add_task' %}">
     {% csrf_token %}
+  </script>
     
     <!-- Wybór przedmiotu -->
     <div class="mb-3">
@@ -42,6 +56,11 @@
       <label for="description" class="form-label">Opis Zadania</label>
       <textarea name="description" id="description" class="form-control" rows="3"></textarea>
     </div>
+
+    <div class="mb-3" id="syncTypeset">
+      <span id="view"></span>
+    </div>
+    
 
     <!-- Wybór plików -->
     <div class="mb-3">
@@ -86,6 +105,12 @@
 
   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
   <script>
+    window.MathJax = {
+      tex: {
+        inlineMath: [['$', '$'], ['\\(', '\\)']]
+      }
+    };
+    
     $(document).ready(function () {
       $('#task_subj').change(function () {
         const selectedSubj = $(this).val();
@@ -118,6 +143,11 @@
         } else {
           typeSelect.prop('disabled', true);  // Zablokuj pole tematu
         }
+      });
+
+      $('#description').keyup(function () {
+        $("#view").empty().append("<p>" + $("#description").val() + "</p>");
+        MathJax.typeset(['#view']);
       });
 
       $('#task_type').change(function () {
