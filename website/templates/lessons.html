@@ -1,0 +1,95 @@
+{% extends 'base.html' %}
+{% block content %}
+<h1>Moje Lekcje</h1>
+<!-- <script type="text/javascript" id="MathJax-script" async
+src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js">
+</script>
+<script>
+    window.MathJax = {
+        tex: {
+            inlineMath: [['$', '$'], ['\\(', '\\)']]
+        },
+    };
+</script> -->
+
+<table class="table mt-5">
+    <thead>
+      <tr>
+        <th scope="col">#</th>
+        <th scope="col">Data</th>
+        <th scope="col">Godzina</th>
+        <th scope="col">Przedmiot</th>
+        <th scope="col">Poziom</th>
+        <th scope="col">Nauczyciel</th>
+        <th scope="col">Link do spotkania</th>
+      </tr>
+    </thead>
+    <!-- <tbody>
+    {% if all_tasks %}
+        {% for task in all_tasks %}
+        <tr>
+            <th scope="row">{{task.id}}</th>
+            <td>{{ task.topic.type.subject.name }}</td>
+            <td>{{ task.level.name }}</td>
+            <td>{{ task.topic.type.name }}</td>
+            <td>{{ task.topic.name }}</td>
+            <td>{{ task.difficulty }}</td>
+            <td>{{ task.author.username }}</td>
+            <td>
+              <a class="btn btn-primary" href="{% url 'task_page_by_id' task.pk %}" role="button">Link</a>
+            </td>
+            <td>
+              {% if task.id|stringformat:"s" in cart %}
+                <a class="btn btn-danger add-to-cart" data-task-id="{{ task.id }}" href="#">Usuń</a>
+              {% else %}
+                <a class="btn btn-success add-to-cart" data-task-id="{{ task.id }}" href="#">Dodaj</a>
+              {% endif %}
+            </td>
+        </tr>
+        {% endfor %}
+    {% endif %}
+    </tbody> -->
+  </table>
+  <br/>
+
+  <h1>Odbyte lekcje</h1>
+
+  <table class="table mt-5">
+    <thead>
+      <tr>
+        <th scope="col">#</th>
+        <th scope="col">Data</th>
+        <th scope="col">Godzina</th>
+        <th scope="col">Przedmiot</th>
+        <th scope="col">Poziom</th>
+        <th scope="col">Nauczyciel</th>
+        <th scope="col">Link do spotkania</th>
+      </tr>
+    </thead>
+    <!-- <tbody>
+    {% if all_tasks %}
+        {% for task in all_tasks %}
+        <tr>
+            <th scope="row">{{task.id}}</th>
+            <td>{{ task.topic.type.subject.name }}</td>
+            <td>{{ task.level.name }}</td>
+            <td>{{ task.topic.type.name }}</td>
+            <td>{{ task.topic.name }}</td>
+            <td>{{ task.difficulty }}</td>
+            <td>{{ task.author.username }}</td>
+            <td>
+              <a class="btn btn-primary" href="{% url 'task_page_by_id' task.pk %}" role="button">Link</a>
+            </td>
+            <td>
+              {% if task.id|stringformat:"s" in cart %}
+                <a class="btn btn-danger add-to-cart" data-task-id="{{ task.id }}" href="#">Usuń</a>
+              {% else %}
+                <a class="btn btn-success add-to-cart" data-task-id="{{ task.id }}" href="#">Dodaj</a>
+              {% endif %}
+            </td>
+        </tr>
+        {% endfor %}
+    {% endif %}
+    </tbody> -->
+  </table>
+{% endblock %}

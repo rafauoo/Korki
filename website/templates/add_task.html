@@ -53,12 +53,13 @@
 
     <!-- Opis zadania -->
     <div class="mb-3">
-      <label for="description" class="form-label">Opis Zadania</label>
+      <label for="description" class="form-label">Treść Zadania</label>
       <textarea name="description" id="description" class="form-control" rows="3"></textarea>
     </div>
 
     <div class="mb-3" id="syncTypeset">
-      <span id="view"></span>
+      <label for="view" class="form-label">Podgląd</label>
+      <span id="view" style="white-space: pre-wrap;"></span>
     </div>
     
 
@@ -110,7 +111,7 @@
         inlineMath: [['$', '$'], ['\\(', '\\)']]
       }
     };
-    
+
     $(document).ready(function () {
       $('#task_subj').change(function () {
         const selectedSubj = $(this).val();

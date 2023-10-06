@@ -137,7 +137,8 @@ def add_task(request):
 @user_passes_test(lambda u: u.is_superuser)
 def task_page(request, task_id):
     task = Task.objects.get(pk=task_id)
-    return render(request, 'task_page.html', {'task': task})
+    files = TaskFile.objects.filter(task=task_id)
+    return render(request, 'task_page.html', {'task': task, 'files': files})
 
 
 @user_passes_test(lambda u: u.is_superuser)
@@ -306,3 +307,7 @@ def assigned_by_me(request):
     assignments_sent_back = assignments.filter(status=AssignmentStatus.objects.get(name="Odesłany"))
     assignments_accepted = assignments.filter(status=AssignmentStatus.objects.get(name="Zaakceptowany"))
     return render(request, 'assigned_by_me.html', {'ass_sent': assignments_sent, 'ass_back': assignments_sent_back, 'ass_acc': assignments_accepted })
+
+@login_required
+def lessons(request):
+    return render(request, 'lessons.html', {})

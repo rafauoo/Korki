@@ -127,4 +127,26 @@ class ResponseFile(models.Model):
             typ = self.type.name
         return (f"#{self.response.id}, {typ}")
 
+class LessonRole(models.Model):
+    name = models.CharField(max_length=255)
+
+class Lesson(models.Model):
+    time = models.DateTimeField()
+    duration = models.DurationField(null=True)
+    subject = models.ForeignKey(TaskSubject, on_delete=models.SET_NULL, null=True)
+    link = models.CharField(max_length=255, null=True)
+
+class LessonUsers(models.Model):
+    lesson = models.ForeignKey(Lesson, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
+    role = models.ForeignKey(LessonRole, on_delete=models.SET_NULL, null=True)
+
+class TeacherStudents(models.Model):
+    teacher = models.ForeignKey(User, related_name='teacher', on_delete=models.CASCADE)
+    student = models.ForeignKey(User, related_name='student', on_delete=models.CASCADE)
+    link = models.CharField(max_length=255, null=True)
+    
+
+
+
 

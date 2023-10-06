@@ -20,4 +20,5 @@ urlpatterns = [
     path('search_user/', views.search_user, name='search_user'),
     path('upload_response/<assignment_id>', views.upload_response, name='upload_response'),
     path('assigned_by_me/', views.assigned_by_me, name='assigned_by_me'),
+    path('lessons/', views.lessons, name="lessons")
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

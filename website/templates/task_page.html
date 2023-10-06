@@ -1,12 +1,100 @@
 {% extends 'base.html' %}
 {% block content %}
-    <h1>Task #{{task.id}}</h1>
-    <h3>Description</h3>
-    <div>{{task.description}}</div>
-    <h3>Author</h3>
-    <div>{{task.author.username}}</div>
-    <h3>Dział</h3>
-    <div>{{task.topic.type.name}}</div>
-    <h3>Temat</h3>
-    <div>{{task.topic.name}}</div>
+<script type="text/javascript" id="MathJax-script" async
+src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js">
+</script>
+<script>
+    window.MathJax = {
+        tex: {
+            inlineMath: [['$', '$'], ['\\(', '\\)']]
+        },
+    };
+</script>
+
+    <div class="card">
+        <div class="card-header">
+            Zadanie #{{task.id}}
+        </div>
+        <div class="card-header">
+            <ul class="nav nav-tabs card-header-tabs" id="navtab" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <a class="nav-link active" id="desc-tab" data-bs-toggle="tab" href="#desc" role="tab" aria-controls="desc" aria-selected="true">Treść</a>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <a class="nav-link" id="props-tab" data-bs-toggle="tab" href="#props" role="tab" aria-controls="props" aria-selected="false">Szczegóły</a>
+                </li>
+            </ul>
+        </div>
+        <div class="card-body" id="card-body">
+            <div class="tab-content" id="myTabContent">
+                <div class="tab-pane fade show active" id="desc" role="tabpanel" aria-labelledby="desc-tab">
+                    <div style="white-space: pre-wrap;">{{task.description}}</div>
+                    <br/>
+                    <br/>
+                    {% if files %}
+                        <h4>Pliki</h4>
+                        <ul class="list-group list-group-flush">
+                            {% for file in files %}
+                                <li class="list-group-item"><a href="/media/{{ file.file }}">{{file.name}}</a></li>
+                            {% endfor %}
+                        </ul>
+                    {% endif %}
+                </div>
+                <div class="tab-pane fade" id="props" role="tabpanel" aria-labelledby="props-tab">
+                    <table class="table">
+                        <tbody>
+                            <tr>
+                                <th scope="row">Autor</th>
+                                <td>{{task.author}}</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Data stworzenia</th>
+                                <td>{{task.date_created}}</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Przedmiot</th>
+                                <td>{{task.topic.type.subject}}</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Dział</th>
+                                <td>{{task.topic.type}}</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Temat</th>
+                                <td>{{task.topic}}</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Poziom</th>
+                                <td>{{task.level}}</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Trudność</th>
+                                <td>{{task.difficulty}}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+<!--     
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        $(document).ready(function () {
+            $('#properties').click(function () {
+                const desc = $('#desc')
+                const prop = $('#properties')
+                const body_desc = $('#card-body1')
+                const body_prop = $('#card-body2')
+                desc.attr("aria-current", "false")
+                prop.attr("aria-current", "true")
+                desc.removeClass("active")
+                prop.addClass("active")
+                body_desc.remo
+                body_desc.addClass("invisible")
+                body_prop.addClass("visible")
+            });
+        });
+    </script> -->
 {% endblock %}
