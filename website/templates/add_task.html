@@ -9,6 +9,10 @@
       svg: {
         fontCache: 'global'
       }
+      ,
+      CommonHTML: {
+        minScaleAdjust: 100,
+      },
     };
     </script>
     <script type="text/javascript" id="MathJax-script" async
@@ -94,13 +98,33 @@
     window.MathJax = {
       tex: {
         inlineMath: [['$', '$'], ['\\(', '\\)']]
-      }
+      },
+      CommonHTML: {
+            minScaleAdjust: 100,
+      },
     };
 
     document.querySelector('form').addEventListener('submit', function(event) {
-      // Przypisz zawartość elementu view do ukrytego pola view_content
-      var viewContent = document.getElementById('view').innerHTML;
-      document.getElementById('view_content').value = viewContent;
+      var str = $("#description").val();
+        var regex = /\$\\img\[[^\]]+\]\$/g;
+        var matches = str.match(regex);
+        var currentlyVisibleIds = [];
+        if (matches) {
+            matches.forEach(function (item, index) {
+                var substr = item.substring(6,item.length-2)
+                if ($('#imgfile' + substr).length)
+                {
+                    var source = $('#imgfile'+substr).attr('src')
+                    var width = $('#imgfile'+substr).attr('width')
+                    str = str.replace(item, '<img class="imgfile" id="imgfile'+substr+'" src="'+source+'" width="'+width+'">')
+                }
+                else {
+                    str = str.replace(item, '<img class="imgfile" id="imgfile'+substr+'" src="" width="100%">')
+                }
+            })
+        }
+        alert(str);
+      document.getElementById('view_content').value = str;
     });
 
     $(document).ready(function () {
