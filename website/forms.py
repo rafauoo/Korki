@@ -23,6 +23,7 @@ class TaskForm(forms.Form):
     task_type = forms.ModelChoiceField(queryset=TaskType.objects.all(), empty_label=None)
     topic = forms.ModelChoiceField(queryset=TaskTopic.objects.all(), empty_label=None)
     view_content = forms.CharField(widget=forms.Textarea)
+    html = forms.CharField(widget=forms.Textarea)
     level = forms.ModelChoiceField(queryset=TaskLevel.objects.all(), empty_label=None)
     diff = forms.IntegerField(max_value=100, min_value=0, step_size=1)
 

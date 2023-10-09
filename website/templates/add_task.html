@@ -76,6 +76,7 @@
     </div>
 
     <input type="hidden" name="view_content" id="view_content" value="">
+    <input type="hidden" name="html" id="html" value="">
 
     <!-- Przycisk przesyłania -->
     <button type="submit" class="btn btn-primary">Prześlij</button>
@@ -125,6 +126,9 @@
         }
         alert(str);
       document.getElementById('view_content').value = str;
+      var viewContent = document.getElementById('view').childNodes[0].innerHTML;
+      alert(viewContent)
+      document.getElementById('html').value = viewContent;
     });
 
     $(document).ready(function () {

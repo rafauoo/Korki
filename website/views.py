@@ -111,23 +111,26 @@ def add_task(request):
             task_type = form.cleaned_data['task_type']
             topic = form.cleaned_data['topic']
             view_content = form.cleaned_data['view_content']
+            html = form.cleaned_data['html']
             level = form.cleaned_data['level']
             diff = form.cleaned_data['diff']
-            print(view_content)
+
+            # img
             img_tags = re.findall(r'<img.*?src=["\'](.*?)["\']', view_content)
             img_ids = re.findall(r'<img.*?id=["\'](.*?)["\']', view_content)
             img_ids = [img_id[7:] + os.path.splitext(img_tags[i])[1] for i, img_id in enumerate(img_ids)]
             img_data = zip(img_ids, img_tags)
+
             task = Task(
                 difficulty=diff,
                 level=level,
                 topic=topic,
+                html=html,
                 description=view_content,
                 author=request.user,
             )
             task.save()
             # Dodaj przesłane pliki do zadania
-            print("ZAPIS")
             for img_id, img_src in img_data:
                 task_file = TaskFile(task=task, file=img_src)
                 task_file.save()
@@ -140,10 +143,13 @@ def add_task(request):
                     os.makedirs(dest_dir)
                 os.rename(src_path, dest_path)
                 view_content = view_content.replace(img_src, '/media/' + task_file_path(task_file, img_id))
+                html = html.replace(img_src, '/media/' + task_file_path(task_file, img_id))
                 task_file.file = task_file_path(task_file, img_id)
                 task_file.save()
             
             task.description = view_content
+            task.save()
+            task.html = html
             task.save()
             # Przekieruj użytkownika po dodaniu zadania
             task_id = task.id

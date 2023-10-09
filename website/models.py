@@ -48,6 +48,7 @@ class TaskTopic(models.Model):
 class Task(models.Model):
     topic = models.ForeignKey(TaskTopic, on_delete=models.SET_NULL, null=True)
     description = models.TextField()
+    html = models.TextField()
     author = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
     difficulty = models.IntegerField(null=True)
     level = models.ForeignKey(TaskLevel, on_delete=models.SET_NULL, null=True)
