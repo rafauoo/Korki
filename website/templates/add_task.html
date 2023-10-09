@@ -51,34 +51,7 @@
       </select>
     </div>
 
-    <!-- Treść zadania -->
-    <div class="mb-3">
-      <label for="description" class="form-label">Treść Zadania</label>
-      <textarea name="description" id="description" class="form-control" rows="3"></textarea>
-    </div>
-
-    <!-- Podgląd treści zadania -->
-    <div class="mb-3" id="syncTypeset">
-      <label for="view" class="form-label">Podgląd</label>
-      <span id="view" style="white-space: pre-wrap;"></span>
-    </div>
-    
-    <!-- Wybór zdjęć -->
-    <div class="mb-3">
-      <div class="card" style="width: 100%">
-        <ul class="list-group list-group-flush" id="image-choice">
-          <li class="list-group-item">An item</li>
-          <li class="list-group-item">A second item</li>
-          <li class="list-group-item">A third item</li>
-        </ul>
-    </div>
-
-    <!-- Wybór dodatkowych plików -->
-    <div class="mb-3">
-      <label for="files" class="form-label">Wybierz pliki</label>
-      <input type="file" name="files" id="files" class="form-control" multiple>
-    </div>
-
+    {% include 'field_editor.html' %}
 
     <!-- Poziom -->
     <div class="mb-3">
@@ -97,6 +70,8 @@
         <output>0</output>
         <input type="range" class="form-range" value="0" min="0" max="100" step="1" name="diff" oninput="this.previousElementSibling.value = this.value" id="diff">
     </div>
+
+    <input type="hidden" name="view_content" id="view_content" value="">
 
     <!-- Przycisk przesyłania -->
     <button type="submit" class="btn btn-primary">Prześlij</button>
@@ -122,36 +97,10 @@
       }
     };
 
-    function uploadImage(substr) {
-      const fileInput = document.getElementById('file_' + substr);
-      console.log(fileInput)
-      const imagePicker = $('#image-choice');
-      const formData = new FormData();
-      formData.append('image', fileInput.files[0]);
-
-      $.ajax({
-        url: '/upload_temp_file/',  // Zmień na odpowiedni URL obsługujący przesyłanie obrazków
-        method: 'POST',
-        data: formData,
-        processData: false,
-        contentType: false,
-        success: function (data) {
-          // Opcjonalnie, przetwórz odpowiedź od serwera, jeśli to konieczne
-
-          // Wyświetl obrazek na stronie po przesłaniu
-          const imageUrl = data.image_url;  // Zakładając, że serwer zwraca URL obrazka
-          console.log(imageUrl)
-          console.log($('#imgfile'+substr).src)
-          $('#imgfile'+substr).attr("src",imageUrl);
-        },
-        error: function (error) {
-          console.error('Wystąpił błąd podczas przesyłania obrazka: ' + error);
-        }
-      });
-    }
-    $(document).on('input', '.filewidth', function () {
-      var index = $(this).attr('id').substr(4);
-      $('#imgfile'+ index).attr('width', $(this).val()+'%');
+    document.querySelector('form').addEventListener('submit', function(event) {
+      // Przypisz zawartość elementu view do ukrytego pola view_content
+      var viewContent = document.getElementById('view').innerHTML;
+      document.getElementById('view_content').value = viewContent;
     });
 
     $(document).ready(function () {
@@ -186,30 +135,6 @@
         } else {
           typeSelect.prop('disabled', true);  // Zablokuj pole tematu
         }
-      });
-
-      $('#description').keyup(function () {
-        var str = $("#description").val();
-        var regex = /\$\\img\[[^\]]+\]\$/g;
-        var matches = str.match(regex);
-        const image_picker = $('#image-choice');
-        if (matches) {
-          matches.forEach(function (item, index) {
-            var substr = item.substring(6,item.length-2)
-            console.log(substr)
-            if(!$('#imgfile' + substr).length) {
-            image_picker.append('<li class="list-group-item"> <label for="file_'+substr+'" class="form-label">'+substr+'</label> <br/>'+
-              '<input type="file" name="file_'+substr+'" id="file_'+substr+'" class="form-control" style="width: 30%; display: inline-block; margin-right: 15px;">' +
-              '<button type="button" style="margin-right: 15px" class="btn btn-success" onclick="uploadImage(\''+substr+'\')">Prześlij</button>'+
-              '<label for="size'+substr+'" class="form-label">Rozmiar</label>'+
-              '<input type="range" class="form-range filewidth" style="width: 30%; display: inline-block" min="0" max="200" id="size'+substr+'"></li>');
-              console.log(item, index);
-            }
-            str = str.replace(item, '<img class="imgfile" id="imgfile'+substr+'" src="" width="50%">')
-          });
-        }
-        $("#view").empty().append("<p>" + str + "</p>");
-        MathJax.typeset(['#view']);
       });
 
       $('#task_type').change(function () {

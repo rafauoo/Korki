@@ -22,8 +22,7 @@ class TaskForm(forms.Form):
     task_subj = forms.ModelChoiceField(queryset=TaskSubject.objects.all(), empty_label=None)
     task_type = forms.ModelChoiceField(queryset=TaskType.objects.all(), empty_label=None)
     topic = forms.ModelChoiceField(queryset=TaskTopic.objects.all(), empty_label=None)
-    description = forms.CharField(max_length=2048, widget=forms.Textarea)
-    files = MultipleFileField(required=False)  # Użyj naszej nowej MultipleFileField
+    view_content = forms.CharField(widget=forms.Textarea)
     level = forms.ModelChoiceField(queryset=TaskLevel.objects.all(), empty_label=None)
     diff = forms.IntegerField(max_value=100, min_value=0, step_size=1)
 

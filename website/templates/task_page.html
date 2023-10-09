@@ -28,8 +28,8 @@ src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js">
         <div class="card-body" id="card-body">
             <div class="tab-content" id="myTabContent">
                 <div class="tab-pane fade show active" id="desc" role="tabpanel" aria-labelledby="desc-tab">
-                    <div style="white-space: pre-wrap;">{{task.description}}</div>
-                    <br/>
+                    <div style="white-space: pre-wrap;">{% autoescape off %}{{task.description}}{% endautoescape %}</div>
+                    <!-- <br/>
                     <br/>
                     {% if files %}
                         <h4>Pliki</h4>
@@ -38,7 +38,7 @@ src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js">
                                 <li class="list-group-item"><a href="/media/{{ file.file }}">{{file.name}}</a></li>
                             {% endfor %}
                         </ul>
-                    {% endif %}
+                    {% endif %} -->
                 </div>
                 <div class="tab-pane fade" id="props" role="tabpanel" aria-labelledby="props-tab">
                     <table class="table">

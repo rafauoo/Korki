@@ -1,2 +1,5 @@
 .env
 media
+tests.py
+sample.html
+sample.pdf

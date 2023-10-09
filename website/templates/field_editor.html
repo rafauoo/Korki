@@ -1,0 +1,98 @@
+<!-- Treść zadania -->
+<div class="mb-3">
+    <label for="description" class="form-label">Treść Zadania</label>
+    <textarea name="description" id="description" class="form-control" rows="3"></textarea>
+</div>
+
+<!-- Podgląd treści zadania -->
+<div class="mb-3" id="syncTypeset">
+    <label for="view" class="form-label">Podgląd</label>
+    <span id="view" style="white-space: pre-wrap;"></span>
+</div>
+    
+<!-- Wybór zdjęć -->
+<div class="mb-3">
+    <div class="card" style="width: 100%">
+        <ul class="list-group list-group-flush" id="image-choice">
+        </ul>
+    </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+    window.MathJax = {
+      tex: {
+        inlineMath: [['$', '$'], ['\\(', '\\)']]
+      }
+    };
+
+    function uploadImage(substr) {
+      const fileInput = document.getElementById('file_' + substr);
+      const imagePicker = $('#image-choice');
+      const formData = new FormData();
+      formData.append('image', fileInput.files[0]);
+
+      $.ajax({
+        url: '/upload_temp_file/',  // Zmień na odpowiedni URL obsługujący przesyłanie obrazków
+        method: 'POST',
+        data: formData,
+        processData: false,
+        contentType: false,
+        success: function (data) {
+          // Opcjonalnie, przetwórz odpowiedź od serwera, jeśli to konieczne
+
+          // Wyświetl obrazek na stronie po przesłaniu
+          const imageUrl = data.image_url;  // Zakładając, że serwer zwraca URL obrazka
+          $('#imgfile'+substr).attr("src",imageUrl);
+        },
+        error: function (error) {
+          console.error('Wystąpił błąd podczas przesyłania obrazka: ' + error);
+        }
+      });
+    }
+    $(document).on('input', '.filewidth', function () {
+        var index = $(this).attr('id').substr(4);
+        $('#imgfile'+ index).attr('width', $(this).val()+'%');
+    });
+
+    $(document).ready(function () {
+        $('#description').keyup(function () {
+        var str = $("#description").val();
+        var regex = /\$\\img\[[^\]]+\]\$/g;
+        var matches = str.match(regex);
+        const image_picker = $('#image-choice');
+        var currentlyVisibleIds = [];
+        if (matches) {
+            matches.forEach(function (item, index) {
+                var substr = item.substring(6,item.length-2)
+                currentlyVisibleIds.push(substr);
+                if(!$('#imgfile' + substr).length) {
+                    image_picker.append('<li id="li_'+substr+'" class="list-group-item"> <label for="file_'+substr+'" class="form-label">'+substr+'</label> <br/>'+
+                    '<input type="file" name="file_'+substr+'" id="file_'+substr+'" class="form-control" style="width: 30%; display: inline-block; margin-right: 15px;">' +
+                    '<button type="button" style="margin-right: 15px" class="btn btn-success" onclick="uploadImage(\''+substr+'\')">Prześlij</button>'+
+                    '<label for="size'+substr+'" class="form-label">Rozmiar</label>'+
+                    '<input type="range" class="form-range filewidth" style="width: 30%; display: inline-block" min="0" max="200" id="size'+substr+'"></li>');
+                }
+                if ($('#imgfile' + substr).length)
+                {
+                    var source = $('#imgfile'+substr).attr('src')
+                    var width = $('#imgfile'+substr).attr('width')
+                    str = str.replace(item, '<img class="imgfile" id="imgfile'+substr+'" src="'+source+'" width="'+width+'">')
+                }
+                else {
+                    str = str.replace(item, '<img class="imgfile" id="imgfile'+substr+'" src="" width="100%">')
+                }
+            });
+        }
+        image_picker.children('li').each(function () {
+            var id = $(this).attr('id')?.substr(3);
+            console.log(currentlyVisibleIds)
+            if (!currentlyVisibleIds.includes(id)) {
+                $(this).remove();
+            }
+        });
+        $("#view").empty().append("<p>" + str + "</p>");
+        MathJax.typeset(['#view']);
+        });
+    })
+</script>

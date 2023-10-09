@@ -9,6 +9,8 @@ from .forms import TaskForm, AdminFilterTaskForm, AssignTask, AddResponse
 from django.http import JsonResponse, HttpResponse
 from .models import TaskTopic
 import os
+import re
+from .models import task_file_path
 from django.conf import settings
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
@@ -108,26 +110,41 @@ def add_task(request):
             subject = form.cleaned_data['task_subj']
             task_type = form.cleaned_data['task_type']
             topic = form.cleaned_data['topic']
-            description = form.cleaned_data['description']
+            view_content = form.cleaned_data['view_content']
             level = form.cleaned_data['level']
             diff = form.cleaned_data['diff']
-            files = request.FILES.getlist('files')  # Pobierz przesłane pliki jako listę
-
-            # Stwórz zadanie i zapisz je do bazy danych
+            print(view_content)
+            img_tags = re.findall(r'<img.*?src=["\'](.*?)["\']', view_content)
+            img_ids = re.findall(r'<img.*?id=["\'](.*?)["\']', view_content)
+            img_ids = [img_id[7:] + os.path.splitext(img_tags[i])[1] for i, img_id in enumerate(img_ids)]
+            img_data = zip(img_ids, img_tags)
             task = Task(
                 difficulty=diff,
                 level=level,
                 topic=topic,
-                description=description,
+                description=view_content,
                 author=request.user,
             )
             task.save()
-
             # Dodaj przesłane pliki do zadania
-            for file in files:
-                task_file = TaskFile(task=task, file=file)
+            print("ZAPIS")
+            for img_id, img_src in img_data:
+                task_file = TaskFile(task=task, file=img_src)
                 task_file.save()
-
+                dest_path = os.path.normpath(os.path.join(settings.MEDIA_ROOT, task_file_path(task_file, img_id)))
+                src_path = os.path.normpath(os.path.join(settings.MEDIA_ROOT, img_src.replace('/media/', '')))
+                print(f"DEST PATH: {dest_path}")
+                print(f"SRC PATH: {src_path}")
+                dest_dir = os.path.dirname(dest_path)
+                if not os.path.exists(dest_dir):
+                    os.makedirs(dest_dir)
+                os.rename(src_path, dest_path)
+                view_content = view_content.replace(img_src, '/media/' + task_file_path(task_file, img_id))
+                task_file.file = task_file_path(task_file, img_id)
+                task_file.save()
+            
+            task.description = view_content
+            task.save()
             # Przekieruj użytkownika po dodaniu zadania
             task_id = task.id
             return redirect('task_page_by_id', task_id=task_id)
