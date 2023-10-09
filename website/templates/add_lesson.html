@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+{% block content %}
+<h1>Dodawanie lekcji</h1>
+<form method="POST" enctype="multipart/form-data" action="{% url 'add_lesson' %}">
+    {% csrf_token %}
+
+    <!-- Wybór przedmiotu  -->
+    <div class="mb-3">
+        <label for="subject" class="form-label">Wybierz przedmiot</label>
+        <select id="subject" name="subject" class="form-select form-select-me mb-3" aria-label="Subject picker">
+          <option value="" selected>Wybierz przedmiot</option>
+          {% for subject in subjects %}
+            <option value="{{ subject.id }}">{{ subject.name }}</option>
+          {% endfor %}
+        </select>
+    </div>
+    <!-- Data i godzina -->
+    <div class="col-md-2">
+        <label for="data_i_godzina">Wybierz datę i godzinę</label>
+        <input type="datetime-local" id="data_i_godzina" name="deadline" class="form-control">
+    </div>
+    <!-- Uczniowie -->
+    <br/>
+    <div class="cold-md-4">
+        <label for="search-user">Przypisz ucznia</label>
+        <br/>
+        {% include 'search_user.html' %}
+    </div>
+</form>
+{% endblock %}

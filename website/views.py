@@ -8,6 +8,10 @@ from django.contrib.auth.models import User
 from .forms import TaskForm, AdminFilterTaskForm, AssignTask, AddResponse
 from django.http import JsonResponse, HttpResponse
 from .models import TaskTopic
+import os
+from django.conf import settings
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
 from django.utils import timezone
 from django.db.models import Q
 import datetime
@@ -311,3 +315,35 @@ def assigned_by_me(request):
 @login_required
 def lessons(request):
     return render(request, 'lessons.html', {})
+
+@user_passes_test(lambda u: u.is_superuser)
+def add_lesson(request):
+    subjects = TaskSubject.objects.all()
+    return render(request, 'add_lesson.html', {'subjects': subjects})
+
+
+@csrf_exempt
+def upload_temp_file(request):
+    if request.method == 'POST' and request.FILES.get('image'):
+        uploaded_image = request.FILES['image']
+
+        # Ustal folder docelowy dla obrazków tymczasowych
+        temp_image_folder = os.path.join(settings.MEDIA_ROOT, 'temp_images')
+        
+        # Upewnij się, że folder istnieje (jeśli nie, utwórz go)
+        os.makedirs(temp_image_folder, exist_ok=True)
+
+        # Wygeneruj unikalną nazwę dla obrazka
+        image_name = uploaded_image.name
+        image_path = os.path.join(temp_image_folder, image_name)
+
+        # Zapisz przesłany obrazek do folderu tymczasowego
+        with open(image_path, 'wb') as destination:
+            for chunk in uploaded_image.chunks():
+                destination.write(chunk)
+
+        # Zwróć URL obrazka
+        image_url = os.path.join(settings.MEDIA_URL, 'temp_images', image_name)
+        return JsonResponse({'image_url': image_url})
+    else:
+        return JsonResponse({'error': 'Brak obrazka lub metoda nieprawidłowa'}, status=400)

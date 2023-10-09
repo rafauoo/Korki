@@ -1,0 +1,45 @@
+<div class="btn-group">
+    <input type="text" autocomplete="off" class="dropdown-toggle form-control" data-bs-toggle="dropdown" data-bs-display="static" aria-expanded="false" id="search-user" name="user"/>
+    <ul id="search-list" class="dropdown-menu dropdown-menu-end dropdown-menu-lg-start">
+        {% comment %} users {% endcomment %}
+    </ul>
+</div>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+<script>
+    $(document).ready(function () {
+        $('#search-user').on("input", function (event) {
+            event.preventDefault();
+            const text = this.value;
+            const search_list = $('#search-list');
+            search_list.empty();
+            console.log(this.value);
+            $.ajax({
+              url: '/search_user/',
+              type: 'POST',
+              data: { 
+                'text': text,
+                csrfmiddlewaretoken: '{{ csrf_token }}' 
+              },
+              dataType: 'json',
+              success: function (data) {
+                for (index in data) {
+                    const newItem = document.createElement("li");
+                    console.log(data[index])
+                    newItem.innerHTML = `<button class='dropdown-item' type='button'>${data[index].username}</button>`;
+                    search_list.append(newItem);
+                }
+              },
+              error: function () {
+                alert('Wystąpił błąd podczas komunikacji z serwerem.');
+              }
+            });
+        });
+        $('#search-list').on('click', '.dropdown-item', function (event) {
+            event.preventDefault();
+            console.log(this)
+            const input = $('#search-user');
+            input.val(this.innerHTML);
+        });
+    });
+</script>
