@@ -127,6 +127,15 @@
 
         $('#generatePDF').click(function (event) {
           event.preventDefault();
+          const toastHeader = document.getElementById('toast-header')
+          const toastLive = document.getElementById('liveToast')
+          const toastBody = document.getElementById('toast-body')
+          const toastTitle = document.getElementById('toast-title')
+          const toastBootstrap = bootstrap.Toast.getOrCreateInstance(toastLive)
+          toastBody.innerHTML = "Rozpoczęto generowanie pliku PDF!"
+          toastTitle.innerHTML = "Sukces"
+          toastHeader.style.backgroundColor = '#03ad20';
+          toastBootstrap.show();
           $.ajax({
               url: '/generatePDF_from_tasks/',
               type: 'POST',

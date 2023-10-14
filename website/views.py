@@ -3,7 +3,7 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.decorators import user_passes_test
-from .models import Task, TaskType,  TaskFile, TaskSubject, TaskLevel, Assignment, AssignmentStatus, TaskAssignment, Response, ResponseFile
+from .models import Task, TaskType, FileType, TaskFile, TaskSubject, TaskLevel, Assignment, AssignmentStatus, TaskAssignment, Response, ResponseFile
 from django.contrib.auth.models import User
 from .forms import TaskForm, AdminFilterTaskForm, AssignTask, AddResponse
 from django.http import JsonResponse, HttpResponse
@@ -145,6 +145,8 @@ def add_task(request):
                 view_content = view_content.replace(img_src, '/media/' + task_file_path(task_file, img_id))
                 html = html.replace(img_src, '/media/' + task_file_path(task_file, img_id))
                 task_file.file = task_file_path(task_file, img_id)
+                task_file.type = FileType.objects.get(name="Zdjęcie")
+                task_file.name = task_file_path(task_file, img_id).split("/")[-1]
                 task_file.save()
             
             task.description = view_content
@@ -397,7 +399,7 @@ def generate_pdf_from_tasks(request):
         # insert it into the document
         soup.body.append(new_tag)
         taskk = Task.objects.get(id=task)
-        new_tag = soup.new_tag("p")
+        new_tag = soup.new_tag("div")
         new_tag.string = taskk.description.replace("src=\"/media/", "src=\"http:/127.0.0.1:8000/media/")
         soup.body.append(new_tag)
         new_tag = soup.new_tag("div")
@@ -409,7 +411,7 @@ def generate_pdf_from_tasks(request):
     
     options = {
         'quiet': '',
-        'javascript-delay' : '500',
+        'javascript-delay' : '1000',
         'page-size': 'A4',
         'margin-top': '0.75in',
         'margin-right': '0.75in',
@@ -419,8 +421,8 @@ def generate_pdf_from_tasks(request):
         'dpi': '400',
     }
     file_path = f"{str(datetime.datetime.now())}{request.user}".replace(" ", "").replace(":", "o").replace(".","a").replace("-", "o")
-    print(file_path)
-    pdfkit.from_string(str(soup).replace("&lt;img", "<img").replace("%\"gt;", "%\">"), output_path=f'./media/temp_files/{file_path}.pdf', configuration=config, options=options)
+    print(str(soup).replace("&lt;img", "<img").replace("&gt;", ">"))
+    pdfkit.from_string(str(soup).replace("&lt;img", "<img").replace("&gt;", ">"), output_path=f'./media/temp_files/{file_path}.pdf', configuration=config, options=options)
     return JsonResponse({'file_path': file_path})
 
 import io
