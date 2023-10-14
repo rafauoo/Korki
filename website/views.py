@@ -165,7 +165,8 @@ def add_task(request):
 def task_page(request, task_id):
     task = Task.objects.get(pk=task_id)
     files = TaskFile.objects.filter(task=task_id)
-    return render(request, 'task_page.html', {'task': task, 'files': files})
+    cart = request.session.get('cart', [])
+    return render(request, 'task_page.html', {'task': task, 'files': files, 'cart': cart})
 
 
 @user_passes_test(lambda u: u.is_superuser)
@@ -370,3 +371,67 @@ def upload_temp_file(request):
         return JsonResponse({'image_url': image_url})
     else:
         return JsonResponse({'error': 'Brak obrazka lub metoda nieprawidłowa'}, status=400)
+
+def generate_pdf_from_tasks(request):
+    import pdfkit
+
+    #Define path to wkhtmltopdf.exe
+    path_to_wkhtmltopdf = r'C:\Program Files\wkhtmltopdf\bin\wkhtmltopdf.exe'
+    tasks = request.session.get('cart', [])
+    #Define path to HTML file
+    tasks = sorted(tasks)
+    #Point pdfkit configuration to wkhtmltopdf.exe
+    config = pdfkit.configuration(wkhtmltopdf=path_to_wkhtmltopdf)
+    import bs4
+
+    # load the file
+    with open("./website/assets/PDF_sample.html") as inf:
+        txt = inf.read()
+        soup = bs4.BeautifulSoup(txt, 'html.parser')
+    print(soup)
+    # create new link
+    for id, task in enumerate(tasks):
+        new_tag = soup.new_tag("h3")
+        new_tag.string = f"Zadanie {id+1}."
+        new_tag['style'] = "font-size: 20px; font-family: Arial, Helvetica, sans-serif;"
+        # insert it into the document
+        soup.body.append(new_tag)
+        taskk = Task.objects.get(id=task)
+        new_tag = soup.new_tag("p")
+        new_tag.string = taskk.description.replace("src=\"/media/", "src=\"http:/127.0.0.1:8000/media/")
+        soup.body.append(new_tag)
+        new_tag = soup.new_tag("div")
+        new_tag['style'] = "font-size: 8px; color: grey; float: right;"
+        new_tag.string = f"#{task}"
+        soup.body.append(new_tag)
+        new_tag = soup.new_tag("br")
+        soup.body.append(new_tag)
+
+    with open("temp_file2.html", "w") as outf:
+         outf.write(str(soup).replace("&lt;img", "<img").replace("%\"gt;", "%\">"))
+    options = {
+        'quiet': '',
+        'javascript-delay' : '500',
+        'page-size': 'A4',
+        'margin-top': '0.75in',
+        'margin-right': '0.75in',
+        'margin-bottom': '0.75in',
+        'margin-left': '0.75in',
+        'disable-smart-shrinking': '',
+        'dpi': '400',
+    }
+    file_path = f"{str(datetime.datetime.now())}{request.user}".replace(" ", "").replace(":", "o").replace(".","a").replace("-", "o")
+    print(file_path)
+    pdfkit.from_string(str(soup).replace("&lt;img", "<img").replace("%\"gt;", "%\">"), output_path=f'./media/temp_files/{file_path}.pdf', configuration=config, options=options)
+    return JsonResponse({'file_path': file_path})
+
+def download_pdf(request):
+    file_path = f"{request.GET['file_name']}.pdf"
+    with open(f"./media/temp_files/{file_path}", "rb") as pdf:
+        response = HttpResponse(pdf.read(), content_type='application/pdf')
+        response['Content-Disposition'] = 'attachment; filename="zadania.pdf"'
+        return response
+
+def clear_cart(request):
+    request.session['cart'] = []
+    return JsonResponse({'message': "Wyczyszczono koszyk!"})

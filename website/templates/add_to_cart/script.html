@@ -1,0 +1,77 @@
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+  $(document).ready(function () {
+    $('.add-to-cart').click(function (event) {
+        event.preventDefault();
+        const taskId = $(this).data('task-id');
+        const button = this
+        if (button.innerHTML === "Dodaj") {
+        // Wyślij żądanie POST do endpointu /add_task_to_cart z identyfikatorem zadania
+          $.ajax({
+            url: '/add_task_to_cart/',
+            type: 'POST',
+            data: { 
+              'task_id': taskId,
+              csrfmiddlewaretoken: '{{ csrf_token }}' 
+            },
+            dataType: 'json',
+            success: function (data) {
+              const toastHeader = document.getElementById('toast-header')
+              const toastLive = document.getElementById('liveToast')
+              const toastBody = document.getElementById('toast-body')
+              const toastTitle = document.getElementById('toast-title')
+              const toastBootstrap = bootstrap.Toast.getOrCreateInstance(toastLive)
+              toastBody.innerHTML = data.message
+              if (data.success) {
+                toastTitle.innerHTML = "Sukces"
+                toastHeader.style.backgroundColor = '#03ad20';
+                button.innerHTML = "Usuń";
+                button.classList.remove("btn-success");
+                button.classList.add("btn-danger");
+              } else {
+                toastTitle.innerHTML = "Błąd"
+                toastHeader.style.backgroundColor = '#b30505';
+              }
+              toastBootstrap.show()
+            },
+            error: function () {
+              alert('Wystąpił błąd podczas komunikacji z serwerem.');
+            }
+          });
+        }
+        else {
+          $.ajax({
+            url: '/remove_task_from_cart/',
+            type: 'POST',
+            data: { 
+              'task_id': taskId,
+              csrfmiddlewaretoken: '{{ csrf_token }}' 
+            },
+            dataType: 'json',
+            success: function (data) {
+              const toastHeader = document.getElementById('toast-header')
+              const toastLive = document.getElementById('liveToast')
+              const toastBody = document.getElementById('toast-body')
+              const toastTitle = document.getElementById('toast-title')
+              const toastBootstrap = bootstrap.Toast.getOrCreateInstance(toastLive)
+              toastBody.innerHTML = data.message
+              if (data.success) {
+                toastTitle.innerHTML = "Sukces"
+                toastHeader.style.backgroundColor = '#03ad20';
+                button.innerHTML = "Dodaj"
+                button.classList.remove("btn-danger")
+                button.classList.add("btn-success")
+              } else {
+                toastTitle.innerHTML = "Błąd"
+                toastHeader.style.backgroundColor = '#b30505';
+              }
+              toastBootstrap.show()
+            },
+            error: function () {
+              alert('Wystąpił błąd podczas komunikacji z serwerem.');
+            }
+          });
+        }
+      });
+  })
+</script>

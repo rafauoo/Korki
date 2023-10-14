@@ -36,14 +36,16 @@
         </tbody>
       </table>
     <br/>
+    <button type="button" id="generatePDF" class="btn btn-warning mb-4" style="float: right">Generuj PDF</button>
+    <button type="submit" id="clearCart" href="{% url 'cart' %}" class="btn btn-danger mb-4 ms-2 me-2">Wyczyść koszyk</button>
     <form method="POST" class="row g-3" enctype="multipart/form-data" action="{% url 'cart' %}">
         {% csrf_token %}
-        <div class="cold-md-4">
+        <div class="cold-md-6">
             <label for="search-user">Przypisz ucznia</label>
             <br/>
             {% include 'search_user.html' %}
         </div>
-        <div class="col-md-2">
+        <div class="col-md-3">
             <label for="data_i_godzina">Wybierz datę i godzinę</label>
             <input type="datetime-local" id="data_i_godzina" name="deadline" class="form-control">
         </div>
@@ -122,6 +124,64 @@
               }
             });
         });
+
+        $('#generatePDF').click(function (event) {
+          event.preventDefault();
+          $.ajax({
+              url: '/generatePDF_from_tasks/',
+              type: 'POST',
+              data: { 
+                csrfmiddlewaretoken: '{{ csrf_token }}' 
+              },
+              dataType: 'json',
+              success: function (data) {
+                console.log("Wygenerowano plik")
+                console.log(data.file_path)
+                file_path = data.file_path
+                var downloadLink = document.createElement("a");
+                downloadLink.href = '/download_pdf/?file_name=' + data.file_path;
+                downloadLink.download = 'zadania.pdf';
+                downloadLink.id = "downloadLink"; // dodaj ID do linku
+                document.body.appendChild(downloadLink); // dodaj link do ciała dokumentu
+
+                downloadLink.click(); // pobierz plik
+                
+                // usuń link po pobraniu pliku
+                downloadLink.addEventListener('click', function () {
+                    document.body.removeChild(downloadLink);
+                });
+              },
+              error: function () {
+                alert('Wystąpił błąd podczas komunikacji z serwerem.');
+              }
+            });
+        })
+        $('#clearCart').click(function (event) {
+            event.preventDefault();
+            $.ajax({
+              url: '/cart/clear/',
+              type: 'POST',
+              data: { 
+                csrfmiddlewaretoken: '{{ csrf_token }}' 
+              },
+              dataType: 'json',
+              success: function (data) {
+                const toastHeader = document.getElementById('toast-header')
+                const toastLive = document.getElementById('liveToast')
+                const toastBody = document.getElementById('toast-body')
+                const toastTitle = document.getElementById('toast-title')
+                const toastBootstrap = bootstrap.Toast.getOrCreateInstance(toastLive)
+                toastBody.innerHTML = data.message
+                  toastTitle.innerHTML = "Sukces"
+                  toastHeader.style.backgroundColor = '#03ad20';
+                  toastBootstrap.show();
+                  location.reload();
+              },
+              error: function () {
+                alert('Wystąpił błąd podczas komunikacji z serwerem.');
+              }
+            });
+        })
     });
 </script>
 {% endblock %}

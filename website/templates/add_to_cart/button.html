@@ -1,0 +1,5 @@
+{% if task.id|stringformat:"s" in cart %}
+<a class="btn btn-danger add-to-cart" data-task-id="{{ task.id }}" href="#">Usuń</a>
+{% else %}
+<a class="btn btn-success add-to-cart" data-task-id="{{ task.id }}" href="#">Dodaj</a>
+{% endif %}
