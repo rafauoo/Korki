@@ -141,7 +141,8 @@ def add_task(request):
                 dest_dir = os.path.dirname(dest_path)
                 if not os.path.exists(dest_dir):
                     os.makedirs(dest_dir)
-                os.rename(src_path, dest_path)
+                if (os.path.exists(src_path)):
+                    os.rename(src_path, dest_path)
                 view_content = view_content.replace(img_src, '/media/' + task_file_path(task_file, img_id))
                 html = html.replace(img_src, '/media/' + task_file_path(task_file, img_id))
                 task_file.file = task_file_path(task_file, img_id)
