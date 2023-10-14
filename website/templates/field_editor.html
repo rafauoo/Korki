@@ -113,7 +113,6 @@
         }
         image_picker.children('li').each(function () {
             var id = $(this).attr('id')?.substr(3);
-            console.log(currentlyVisibleIds)
             if (!currentlyVisibleIds.includes(id)) {
                 $(this).remove();
             }
