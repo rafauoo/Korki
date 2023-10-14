@@ -25,5 +25,5 @@ urlpatterns = [
     path('upload_temp_file/', views.upload_temp_file, name="upload_temp_file"),
     path('generatePDF_from_tasks/', views.generate_pdf_from_tasks, name="generatePDF_from_tasks"),
     path('download_pdf/', views.download_pdf, name='download_pdf'),
-    path('cart/clear/', views.clear_cart, name="clear_cart")
+    path('cart/clear/', views.clear_cart, name="clear_cart"),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

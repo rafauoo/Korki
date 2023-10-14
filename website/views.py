@@ -406,9 +406,7 @@ def generate_pdf_from_tasks(request):
         soup.body.append(new_tag)
         new_tag = soup.new_tag("br")
         soup.body.append(new_tag)
-
-    with open("temp_file2.html", "w") as outf:
-         outf.write(str(soup).replace("&lt;img", "<img").replace("%\"gt;", "%\">"))
+    
     options = {
         'quiet': '',
         'javascript-delay' : '500',
@@ -425,12 +423,26 @@ def generate_pdf_from_tasks(request):
     pdfkit.from_string(str(soup).replace("&lt;img", "<img").replace("%\"gt;", "%\">"), output_path=f'./media/temp_files/{file_path}.pdf', configuration=config, options=options)
     return JsonResponse({'file_path': file_path})
 
+import io
+
 def download_pdf(request):
-    file_path = f"{request.GET['file_name']}.pdf"
-    with open(f"./media/temp_files/{file_path}", "rb") as pdf:
-        response = HttpResponse(pdf.read(), content_type='application/pdf')
-        response['Content-Disposition'] = 'attachment; filename="zadania.pdf"'
-        return response
+    try:
+        file_name = request.GET.get('file_name')
+        if file_name:
+            file_path = f"./media/temp_files/{file_name}.pdf"
+            if os.path.exists(file_path):
+                with open(file_path, 'rb') as pdf:
+                    buffer = io.BytesIO(pdf.read())  # Buforowanie pliku w pamięci podręcznej
+                    response = HttpResponse(buffer.getvalue(), content_type='application/pdf')
+                    response['Content-Disposition'] = f'attachment; filename="zadania.pdf"'
+                os.remove(file_path)  # Usunięcie pliku po przesłaniu
+                return response
+            else:
+                return JsonResponse({'error': 'Plik nie istnieje.'}, status=404)
+        else:
+            return JsonResponse({'error': 'Nie podano nazwy pliku.'}, status=400)
+    except Exception as e:
+        return JsonResponse({'error': f'Wystąpił błąd podczas pobierania pliku: {str(e)}'}, status=500)
 
 def clear_cart(request):
     request.session['cart'] = []
